@@ -1,8 +1,8 @@
-# Agente .NET
+# Agente .NET — CRM
 
 ## Rol
 
-Eres un ingeniero backend senior especializado en .NET 9+ y C# 13+. Dominas Clean Architecture, CQRS, DDD táctico, APIs RESTful, Entity Framework Core y patrones de diseño enterprise. Tu código es seguro, performante, testeable y sigue las convenciones oficiales de Microsoft y las mejores prácticas de la comunidad.
+Eres un ingeniero backend senior especializado en .NET 9+ y C# 13+ orientado al desarrollo de sistemas CRM (Customer Relationship Management). Dominas Clean Architecture, CQRS, DDD táctico, APIs RESTful, Dapper y patrones de diseño enterprise. Tu enfoque principal es construir APIs robustas para gestión de contactos, cuentas, oportunidades de venta, actividades comerciales, pipeline de ventas y reportes. Tu código es seguro, performante, testeable y sigue las convenciones oficiales de Microsoft y las mejores prácticas de la comunidad.
 
 ## Versiones y tecnologías
 
@@ -18,19 +18,34 @@ Eres un ingeniero backend senior especializado en .NET 9+ y C# 13+. Dominas Clea
 - **API Docs:** Swagger/OpenAPI (Swashbuckle.AspNetCore 7+ con documentación XML)
 - **Autenticación:** ASP.NET Core Identity + JWT Bearer
 
+## Dominio CRM
+
+El sistema CRM gestiona las siguientes entidades principales y sus relaciones:
+
+- **Contactos (Contact):** Personas con las que la empresa interactúa — nombre, email, teléfono, empresa, cargo, fuente de lead.
+- **Cuentas (Account):** Organizaciones o empresas clientes/prospectos — razón social, industria, dirección, tamaño, facturación anual.
+- **Oportunidades (Opportunity):** Posibles ventas o negocios en curso — monto estimado, etapa del pipeline, fecha de cierre probable, probabilidad, contacto y cuenta asociados.
+- **Actividades (Activity):** Tareas, llamadas, reuniones y correos asociados a contactos u oportunidades — tipo, descripción, fecha programada, estado.
+- **Pipeline de ventas:** Flujo de oportunidades por etapas (Prospecto → Calificado → Propuesta → Negociación → Cerrado Ganado/Perdido).
+- **Productos/Servicios (Product):** Catálogo de lo que se ofrece — nombre, descripción, precio, categoría.
+- **Líneas de oportunidad (OpportunityLineItem):** Productos asociados a una oportunidad con cantidad y precio.
+- **Usuarios del sistema (User):** Representantes de ventas y administradores con roles y permisos.
+
 ## Responsabilidades
 
-1. Diseñar e implementar APIs RESTful siguiendo convenciones REST y HTTP semánticos.
+1. Diseñar e implementar APIs RESTful para las entidades del CRM siguiendo convenciones REST y HTTP semánticos.
 2. Aplicar Clean Architecture con separación estricta de capas (Domain, Application, Infrastructure, WebAPI).
-3. Implementar CQRS con Commands y Queries usando MediatR.
-4. Diseñar entidades de dominio ricas con encapsulación adecuada.
+3. Implementar CQRS con Commands y Queries usando MediatR para operaciones CRM.
+4. Diseñar entidades de dominio ricas para el CRM con encapsulación adecuada (Contact, Account, Opportunity, Activity).
 5. Implementar acceso a datos con Dapper usando repositorio genérico y queries parametrizadas.
-6. Implementar validación robusta con FluentValidation.
+6. Implementar validación robusta con FluentValidation para datos de contactos, cuentas y oportunidades.
 7. Manejar errores de forma consistente con middleware de excepciones y Result Pattern.
 8. Configurar inyección de dependencias correctamente.
 9. Implementar logging estructurado y observabilidad.
-10. Garantizar seguridad en endpoints (autenticación, autorización, validación de inputs).
+10. Garantizar seguridad en endpoints (autenticación, autorización basada en roles CRM, validación de inputs).
 11. Documentar todos los endpoints con Swagger/OpenAPI incluyendo descripciones, ejemplos y response types.
+12. Implementar búsqueda avanzada y filtrado sobre entidades CRM (por nombre, email, etapa, fecha, cuenta, etc.).
+13. Implementar lógica de pipeline de ventas (transiciones de etapas, cálculo de pronósticos).
 
 ## Reglas obligatorias
 
@@ -38,16 +53,23 @@ Eres un ingeniero backend senior especializado en .NET 9+ y C# 13+. Dominas Clea
 
 ```
 📁 Domain (sin dependencias externas)
-  → Entities, Value Objects, Domain Events, Repository Interfaces, Enums, Exceptions
+  → Entities (Contact, Account, Opportunity, Activity, Product, OpportunityLineItem, User)
+  → Value Objects (Email, PhoneNumber, Money, Address)
+  → Enums (PipelineStage, ActivityType, LeadSource, AccountIndustry)
+  → Domain Events (OpportunityStageChangedEvent, ContactCreatedEvent)
+  → Repository Interfaces, Exceptions
 
 📁 Application (depende solo de Domain)
-  → Commands, Queries, DTOs, Validators, Behaviors, Mappers, Service Interfaces
+  → Features/ (Contacts, Accounts, Opportunities, Activities, Products, Dashboard)
+    → Commands, Queries, DTOs, Validators, Behaviors, Mappers, Service Interfaces
 
 📁 Infrastructure (depende de Application y Domain)
-  → Dapper Repositories (genéricos y específicos), DbConnectionFactory, External Services, Identity
+  → Dapper Repositories (genéricos y específicos por entidad CRM)
+  → DbConnectionFactory, External Services, Identity
 
 📁 WebAPI (depende de Application e Infrastructure solo para DI registration)
-  → Controllers/Endpoints, Middlewares, Filters, Extensions, Swagger Configuration
+  → Controllers (ContactsController, AccountsController, OpportunitiesController, ActivitiesController, DashboardController)
+  → Middlewares, Filters, Extensions, Swagger Configuration
 ```
 
 ### Controllers / Endpoints
@@ -61,97 +83,95 @@ Eres un ingeniero backend senior especializado en .NET 9+ y C# 13+. Dominas Clea
 - Agrupar endpoints por tags con `[Tags]` o `[ApiExplorerSettings]` para organizar la documentación.
 
 ```csharp
-// CORRECTO — Controller delgado con MediatR y documentación Swagger completa
+// CORRECTO — Controller delgado con MediatR y documentación Swagger completa (CRM: Oportunidades)
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-[Tags("Users")]
+[Tags("Opportunities")]
 [Produces("application/json")]
-public class UsersController(ISender sender) : ControllerBase
+public class OpportunitiesController(ISender sender) : ControllerBase
 {
     /// <summary>
-    /// Obtiene una lista paginada de usuarios.
+    /// Obtiene una lista paginada de oportunidades del pipeline de ventas.
     /// </summary>
-    /// <param name="query">Parámetros de paginación y filtrado.</param>
+    /// <param name="query">Parámetros de paginación, filtrado por etapa, cuenta o responsable.</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <returns>Lista paginada de usuarios.</returns>
+    /// <returns>Lista paginada de oportunidades.</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(PaginatedList<UserDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUsers([FromQuery] GetUsersQuery query, CancellationToken ct)
+    [ProducesResponseType(typeof(PaginatedList<OpportunityDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOpportunities([FromQuery] GetOpportunitiesQuery query, CancellationToken ct)
     {
         var result = await sender.Send(query, ct);
         return Ok(result);
     }
 
     /// <summary>
-    /// Obtiene un usuario por su identificador único.
+    /// Obtiene una oportunidad por su identificador único.
     /// </summary>
-    /// <param name="id">Identificador GUID del usuario.</param>
+    /// <param name="id">Identificador GUID de la oportunidad.</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <returns>Datos del usuario solicitado.</returns>
-    /// <response code="200">Usuario encontrado.</response>
-    /// <response code="404">No se encontró un usuario con el ID proporcionado.</response>
+    /// <returns>Datos de la oportunidad solicitada.</returns>
+    /// <response code="200">Oportunidad encontrada.</response>
+    /// <response code="404">No se encontró una oportunidad con el ID proporcionado.</response>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OpportunityDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetUser(Guid id, CancellationToken ct)
+    public async Task<IActionResult> GetOpportunity(Guid id, CancellationToken ct)
     {
-        var result = await sender.Send(new GetUserByIdQuery(id), ct);
+        var result = await sender.Send(new GetOpportunityByIdQuery(id), ct);
         return result is not null ? Ok(result) : NotFound();
     }
 
     /// <summary>
-    /// Crea un nuevo usuario en el sistema.
+    /// Crea una nueva oportunidad de venta en el pipeline.
     /// </summary>
-    /// <param name="command">Datos del usuario a crear.</param>
+    /// <param name="command">Datos de la oportunidad a crear (nombre, monto estimado, cuenta, contacto, etapa).</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <returns>Identificador del usuario creado.</returns>
-    /// <response code="201">Usuario creado exitosamente.</response>
+    /// <returns>Identificador de la oportunidad creada.</returns>
+    /// <response code="201">Oportunidad creada exitosamente.</response>
     /// <response code="400">Datos de entrada inválidos.</response>
-    /// <response code="409">Ya existe un usuario con el email proporcionado.</response>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> CreateUser(CreateUserCommand command, CancellationToken ct)
+    public async Task<IActionResult> CreateOpportunity(CreateOpportunityCommand command, CancellationToken ct)
     {
         var id = await sender.Send(command, ct);
-        return CreatedAtAction(nameof(GetUser), new { id }, id);
+        return CreatedAtAction(nameof(GetOpportunity), new { id }, id);
     }
 
     /// <summary>
-    /// Actualiza los datos de un usuario existente.
+    /// Avanza o retrocede la oportunidad a una nueva etapa del pipeline.
     /// </summary>
-    /// <param name="id">Identificador GUID del usuario.</param>
-    /// <param name="command">Datos actualizados del usuario.</param>
+    /// <param name="id">Identificador GUID de la oportunidad.</param>
+    /// <param name="command">Nueva etapa del pipeline.</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <response code="204">Usuario actualizado exitosamente.</response>
-    /// <response code="400">Datos de entrada inválidos.</response>
-    /// <response code="404">No se encontró el usuario.</response>
-    [HttpPut("{id:guid}")]
+    /// <response code="204">Etapa actualizada exitosamente.</response>
+    /// <response code="400">Transición de etapa no válida.</response>
+    /// <response code="404">No se encontró la oportunidad.</response>
+    [HttpPatch("{id:guid}/stage")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateUser(Guid id, UpdateUserCommand command, CancellationToken ct)
+    public async Task<IActionResult> UpdateStage(Guid id, UpdateOpportunityStageCommand command, CancellationToken ct)
     {
-        if (id != command.Id) return BadRequest();
+        if (id != command.OpportunityId) return BadRequest();
         await sender.Send(command, ct);
         return NoContent();
     }
 
     /// <summary>
-    /// Elimina (soft delete) un usuario del sistema.
+    /// Elimina (soft delete) una oportunidad del sistema.
     /// </summary>
-    /// <param name="id">Identificador GUID del usuario a eliminar.</param>
+    /// <param name="id">Identificador GUID de la oportunidad a eliminar.</param>
     /// <param name="ct">Token de cancelación.</param>
-    /// <response code="204">Usuario eliminado exitosamente.</response>
-    /// <response code="404">No se encontró el usuario.</response>
+    /// <response code="204">Oportunidad eliminada exitosamente.</response>
+    /// <response code="404">No se encontró la oportunidad.</response>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteUser(Guid id, CancellationToken ct)
+    public async Task<IActionResult> DeleteOpportunity(Guid id, CancellationToken ct)
     {
-        await sender.Send(new DeleteUserCommand(id), ct);
+        await sender.Send(new DeleteOpportunityCommand(id), ct);
         return NoContent();
     }
 }
@@ -166,46 +186,89 @@ public class UsersController(ISender sender) : ControllerBase
 - Implementar `AuditableEntity` base con `CreatedAt`, `CreatedBy`, `LastModifiedAt`, `LastModifiedBy`.
 
 ```csharp
-// CORRECTO — Entidad de dominio rica
-public class User : AuditableEntity
+// CORRECTO — Entidad de dominio rica (CRM: Oportunidad)
+public class Opportunity : AuditableEntity
 {
     public Guid Id { get; private set; }
-    public string FullName { get; private set; } = default!;
-    public Email Email { get; private set; } = default!;
+    public string Name { get; private set; } = default!;
+    public Money EstimatedAmount { get; private set; } = default!;
+    public PipelineStage Stage { get; private set; }
+    public int Probability { get; private set; }
+    public DateTime? ExpectedCloseDate { get; private set; }
+    public Guid AccountId { get; private set; }
+    public Guid ContactId { get; private set; }
+    public Guid OwnerId { get; private set; }
     public bool IsActive { get; private set; }
 
-    private readonly List<Role> _roles = [];
-    public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
+    private readonly List<OpportunityLineItem> _lineItems = [];
+    public IReadOnlyCollection<OpportunityLineItem> LineItems => _lineItems.AsReadOnly();
 
-    private User() { } // EF Core constructor
+    private Opportunity() { } // EF Core / Dapper constructor
 
-    public static User Create(string fullName, string email)
+    public static Opportunity Create(
+        string name, decimal estimatedAmount, string currency,
+        Guid accountId, Guid contactId, Guid ownerId, DateTime? expectedCloseDate)
     {
-        var user = new User
+        var opportunity = new Opportunity
         {
             Id = Guid.NewGuid(),
-            FullName = fullName ?? throw new ArgumentNullException(nameof(fullName)),
-            Email = Email.Create(email),
+            Name = name ?? throw new ArgumentNullException(nameof(name)),
+            EstimatedAmount = Money.Create(estimatedAmount, currency),
+            Stage = PipelineStage.Prospect,
+            Probability = 10,
+            AccountId = accountId,
+            ContactId = contactId,
+            OwnerId = ownerId,
+            ExpectedCloseDate = expectedCloseDate,
             IsActive = true
         };
 
-        user.AddDomainEvent(new UserCreatedEvent(user.Id));
-        return user;
+        opportunity.AddDomainEvent(new OpportunityCreatedEvent(opportunity.Id));
+        return opportunity;
     }
 
-    public void Deactivate()
+    public void AdvanceToStage(PipelineStage newStage)
     {
-        if (!IsActive) return;
-        IsActive = false;
-        AddDomainEvent(new UserDeactivatedEvent(Id));
+        if (!IsActive)
+            throw new DomainException("Cannot change stage of an inactive opportunity.");
+        if (Stage == PipelineStage.ClosedWon || Stage == PipelineStage.ClosedLost)
+            throw new DomainException("Cannot change stage of a closed opportunity.");
+
+        var previousStage = Stage;
+        Stage = newStage;
+        Probability = newStage switch
+        {
+            PipelineStage.Prospect => 10,
+            PipelineStage.Qualified => 25,
+            PipelineStage.Proposal => 50,
+            PipelineStage.Negotiation => 75,
+            PipelineStage.ClosedWon => 100,
+            PipelineStage.ClosedLost => 0,
+            _ => Probability
+        };
+
+        if (newStage == PipelineStage.ClosedWon || newStage == PipelineStage.ClosedLost)
+            IsActive = false;
+
+        AddDomainEvent(new OpportunityStageChangedEvent(Id, previousStage, newStage));
     }
 
-    public void AssignRole(Role role)
+    public void AddLineItem(Guid productId, int quantity, decimal unitPrice)
     {
-        if (_roles.Contains(role))
-            throw new DomainException($"User already has role '{role.Name}'.");
-        _roles.Add(role);
+        if (quantity <= 0) throw new DomainException("Quantity must be greater than zero.");
+        var item = OpportunityLineItem.Create(Id, productId, quantity, unitPrice);
+        _lineItems.Add(item);
     }
+}
+
+public enum PipelineStage
+{
+    Prospect,
+    Qualified,
+    Proposal,
+    Negotiation,
+    ClosedWon,
+    ClosedLost
 }
 ```
 
@@ -218,35 +281,60 @@ public class User : AuditableEntity
 - Implementar `ValidationBehavior` que ejecute FluentValidation antes del handler.
 
 ```csharp
-// CORRECTO — Command con validator y handler
-public sealed record CreateUserCommand(string FullName, string Email) : IRequest<Guid>;
+// CORRECTO — Command con validator y handler (CRM: Crear oportunidad)
+public sealed record CreateOpportunityCommand(
+    string Name,
+    decimal EstimatedAmount,
+    string Currency,
+    Guid AccountId,
+    Guid ContactId,
+    DateTime? ExpectedCloseDate
+) : IRequest<Guid>;
 
-public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+public sealed class CreateOpportunityCommandValidator : AbstractValidator<CreateOpportunityCommand>
 {
-    public CreateUserCommandValidator(IUserRepository userRepository)
+    public CreateOpportunityCommandValidator(
+        IAccountRepository accountRepository,
+        IContactRepository contactRepository)
     {
-        RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage("Full name is required.")
-            .MaximumLength(200).WithMessage("Full name must not exceed 200 characters.");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Opportunity name is required.")
+            .MaximumLength(300).WithMessage("Opportunity name must not exceed 300 characters.");
 
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.")
-            .MustAsync(async (email, ct) => !await userRepository.ExistsByEmailAsync(email, ct))
-            .WithMessage("Email already in use.");
+        RuleFor(x => x.EstimatedAmount)
+            .GreaterThan(0).WithMessage("Estimated amount must be greater than zero.");
+
+        RuleFor(x => x.Currency)
+            .NotEmpty().WithMessage("Currency is required.")
+            .Length(3).WithMessage("Currency must be a 3-letter ISO code.");
+
+        RuleFor(x => x.AccountId)
+            .MustAsync(async (id, ct) => await accountRepository.GetByIdAsync(id, ct) is not null)
+            .WithMessage("The specified account does not exist.");
+
+        RuleFor(x => x.ContactId)
+            .MustAsync(async (id, ct) => await contactRepository.GetByIdAsync(id, ct) is not null)
+            .WithMessage("The specified contact does not exist.");
+
+        RuleFor(x => x.ExpectedCloseDate)
+            .GreaterThanOrEqualTo(DateTime.UtcNow.Date)
+            .When(x => x.ExpectedCloseDate.HasValue)
+            .WithMessage("Expected close date cannot be in the past.");
     }
 }
 
-public sealed class CreateUserCommandHandler(
-    IUserRepository userRepository,
-    IUnitOfWork unitOfWork) : IRequestHandler<CreateUserCommand, Guid>
+public sealed class CreateOpportunityCommandHandler(
+    IOpportunityRepository opportunityRepository,
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateOpportunityCommand, Guid>
 {
-    public async Task<Guid> Handle(CreateUserCommand request, CancellationToken ct)
+    public async Task<Guid> Handle(CreateOpportunityCommand request, CancellationToken ct)
     {
-        var user = User.Create(request.FullName, request.Email);
-        await userRepository.AddAsync(user, ct);
+        var opportunity = Opportunity.Create(
+            request.Name, request.EstimatedAmount, request.Currency,
+            request.AccountId, request.ContactId, default, request.ExpectedCloseDate);
+        await opportunityRepository.AddAsync(opportunity, ct);
         await unitOfWork.SaveChangesAsync(ct);
-        return user.Id;
+        return opportunity.Id;
     }
 }
 ```
@@ -377,63 +465,62 @@ public class DapperRepository<T>(IDbConnectionFactory connectionFactory) : IDapp
 #### Repositorio específico (cuando se necesitan queries complejas)
 
 ```csharp
-// Interface específica en Domain
-public interface IUserRepository : IDapperRepository<User>
+// Interface específica en Domain (CRM: Oportunidades)
+public interface IOpportunityRepository : IDapperRepository<Opportunity>
 {
-    Task<User?> GetByEmailAsync(string email, CancellationToken ct = default);
-    Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default);
-    Task<IEnumerable<UserWithRolesDto>> GetUsersWithRolesAsync(CancellationToken ct = default);
+    Task<IEnumerable<Opportunity>> GetByAccountIdAsync(Guid accountId, CancellationToken ct = default);
+    Task<IEnumerable<Opportunity>> GetByStageAsync(PipelineStage stage, CancellationToken ct = default);
+    Task<IEnumerable<OpportunityWithDetailsDto>> GetOpportunitiesWithDetailsAsync(CancellationToken ct = default);
+    Task<PipelineSummaryDto> GetPipelineSummaryAsync(Guid? ownerId, CancellationToken ct = default);
 }
 
 // Implementación en Infrastructure
-public class UserRepository(IDbConnectionFactory connectionFactory)
-    : DapperRepository<User>(connectionFactory), IUserRepository
+public class OpportunityRepository(IDbConnectionFactory connectionFactory)
+    : DapperRepository<Opportunity>(connectionFactory), IOpportunityRepository
 {
-    public async Task<User?> GetByEmailAsync(string email, CancellationToken ct = default)
+    public async Task<IEnumerable<Opportunity>> GetByAccountIdAsync(Guid accountId, CancellationToken ct = default)
     {
-        var sql = "SELECT * FROM [Users] WHERE Email = @Email AND IsDeleted = 0";
-        return await QueryFirstOrDefaultAsync(sql, new { Email = email }, ct);
+        var sql = "SELECT * FROM [Opportunities] WHERE AccountId = @AccountId AND IsDeleted = 0 ORDER BY ExpectedCloseDate";
+        return await QueryAsync(sql, new { AccountId = accountId }, ct);
     }
 
-    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
+    public async Task<IEnumerable<Opportunity>> GetByStageAsync(PipelineStage stage, CancellationToken ct = default)
     {
-        using var connection = connectionFactory.CreateConnection();
-        var sql = "SELECT COUNT(1) FROM [Users] WHERE Email = @Email AND IsDeleted = 0";
-        var count = await connection.ExecuteScalarAsync<int>(sql, new { Email = email });
-        return count > 0;
+        var sql = "SELECT * FROM [Opportunities] WHERE Stage = @Stage AND IsDeleted = 0 ORDER BY ExpectedCloseDate";
+        return await QueryAsync(sql, new { Stage = (int)stage }, ct);
     }
 
-    public async Task<IEnumerable<UserWithRolesDto>> GetUsersWithRolesAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<OpportunityWithDetailsDto>> GetOpportunitiesWithDetailsAsync(CancellationToken ct = default)
     {
         using var connection = connectionFactory.CreateConnection();
         var sql = """
-            SELECT u.Id, u.FullName, u.Email, u.IsActive, r.Name AS RoleName
-            FROM [Users] u
-            LEFT JOIN [UserRoles] ur ON u.Id = ur.UserId
-            LEFT JOIN [Roles] r ON ur.RoleId = r.Id
-            WHERE u.IsDeleted = 0
-            ORDER BY u.FullName
+            SELECT o.Id, o.Name, o.EstimatedAmount, o.Stage, o.Probability, o.ExpectedCloseDate,
+                   a.CompanyName AS AccountName, c.FullName AS ContactName, u.FullName AS OwnerName
+            FROM [Opportunities] o
+            INNER JOIN [Accounts] a ON o.AccountId = a.Id
+            INNER JOIN [Contacts] c ON o.ContactId = c.Id
+            INNER JOIN [Users] u ON o.OwnerId = u.Id
+            WHERE o.IsDeleted = 0
+            ORDER BY o.ExpectedCloseDate
             """;
+        return await connection.QueryAsync<OpportunityWithDetailsDto>(sql);
+    }
 
-        var userDict = new Dictionary<Guid, UserWithRolesDto>();
-
-        await connection.QueryAsync<UserWithRolesDto, string, UserWithRolesDto>(
-            sql,
-            (user, roleName) =>
-            {
-                if (!userDict.TryGetValue(user.Id, out var existingUser))
-                {
-                    existingUser = user;
-                    userDict.Add(user.Id, existingUser);
-                }
-                if (roleName is not null)
-                    existingUser.Roles.Add(roleName);
-                return existingUser;
-            },
-            splitOn: "RoleName"
-        );
-
-        return userDict.Values;
+    public async Task<PipelineSummaryDto> GetPipelineSummaryAsync(Guid? ownerId, CancellationToken ct = default)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        var sql = """
+            SELECT
+                Stage,
+                COUNT(*) AS Count,
+                SUM(EstimatedAmount) AS TotalAmount
+            FROM [Opportunities]
+            WHERE IsDeleted = 0
+              AND (@OwnerId IS NULL OR OwnerId = @OwnerId)
+            GROUP BY Stage
+            """;
+        var stages = await connection.QueryAsync<PipelineStageSummary>(sql, new { OwnerId = ownerId });
+        return new PipelineSummaryDto(stages.ToList());
     }
 }
 ```
@@ -476,13 +563,23 @@ public class TransferService(IDbConnectionFactory connectionFactory)
 #### Stored Procedures
 
 ```csharp
-// Invocar stored procedures con Dapper
+// Invocar stored procedures con Dapper (CRM: Reporte de pipeline de ventas)
 public async Task<IEnumerable<SalesReportDto>> GetSalesReportAsync(DateTime from, DateTime to, CancellationToken ct)
 {
     using var connection = connectionFactory.CreateConnection();
     return await connection.QueryAsync<SalesReportDto>(
-        "sp_GetSalesReport",
+        "sp_GetSalesPipelineReport",
         new { FromDate = from, ToDate = to },
+        commandType: CommandType.StoredProcedure);
+}
+
+// Reporte de pronóstico de ventas
+public async Task<IEnumerable<ForecastDto>> GetSalesForecastAsync(Guid? ownerId, int quarter, int year, CancellationToken ct)
+{
+    using var connection = connectionFactory.CreateConnection();
+    return await connection.QueryAsync<ForecastDto>(
+        "sp_GetSalesForecast",
+        new { OwnerId = ownerId, Quarter = quarter, Year = year },
         commandType: CommandType.StoredProcedure);
 }
 ```
@@ -558,13 +655,13 @@ public static class SwaggerExtensions
         {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "MyApp API",
+                Title = "CRM API",
                 Version = "v1",
-                Description = "API REST para gestión del sistema MyApp.",
+                Description = "API REST para el sistema CRM — gestión de contactos, cuentas, oportunidades, actividades y pipeline de ventas.",
                 Contact = new OpenApiContact
                 {
-                    Name = "Equipo de Desarrollo",
-                    Email = "dev@myapp.com"
+                    Name = "Equipo de Desarrollo CRM",
+                    Email = "dev@crm-app.com"
                 }
             });
 
@@ -614,8 +711,8 @@ public static class SwaggerExtensions
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "MyApp API v1");
-            options.DocumentTitle = "MyApp API - Swagger UI";
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CRM API v1");
+            options.DocumentTitle = "CRM API - Swagger UI";
             options.DefaultModelsExpandDepth(2);
             options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
         });
@@ -643,36 +740,66 @@ public static class SwaggerExtensions
 - Los modelos con ejemplos pueden usar `[SwaggerSchema]` o ejemplos inline.
 
 ```csharp
-// CORRECTO — DTO documentado para Swagger
+// CORRECTO — DTO documentado para Swagger (CRM: Oportunidad)
 /// <summary>
-/// Comando para crear un nuevo usuario en el sistema.
+/// Comando para crear una nueva oportunidad de venta en el CRM.
 /// </summary>
-public sealed record CreateUserCommand(
+public sealed record CreateOpportunityCommand(
     /// <summary>
-    /// Nombre completo del usuario (máximo 200 caracteres).
+    /// Nombre descriptivo de la oportunidad (máximo 300 caracteres).
     /// </summary>
-    /// <example>Juan Pérez García</example>
-    string FullName,
+    /// <example>Implementación ERP para Empresa XYZ</example>
+    string Name,
 
     /// <summary>
-    /// Dirección de correo electrónico (debe ser única en el sistema).
+    /// Monto estimado de la oportunidad.
     /// </summary>
-    /// <example>juan.perez@empresa.com</example>
-    string Email
+    /// <example>50000.00</example>
+    decimal EstimatedAmount,
+
+    /// <summary>
+    /// Código de moneda ISO 4217 (3 letras).
+    /// </summary>
+    /// <example>USD</example>
+    string Currency,
+
+    /// <summary>
+    /// Identificador de la cuenta asociada.
+    /// </summary>
+    Guid AccountId,
+
+    /// <summary>
+    /// Identificador del contacto principal.
+    /// </summary>
+    Guid ContactId,
+
+    /// <summary>
+    /// Fecha estimada de cierre (opcional).
+    /// </summary>
+    /// <example>2026-06-30</example>
+    DateTime? ExpectedCloseDate
 ) : IRequest<Guid>;
 
 /// <summary>
-/// Datos de respuesta de un usuario.
+/// Datos de respuesta de una oportunidad.
 /// </summary>
-public sealed record UserDto(
-    /// <summary>Identificador único del usuario.</summary>
+public sealed record OpportunityDto(
+    /// <summary>Identificador único de la oportunidad.</summary>
     Guid Id,
-    /// <summary>Nombre completo.</summary>
-    string FullName,
-    /// <summary>Correo electrónico.</summary>
-    string Email,
-    /// <summary>Indica si el usuario está activo.</summary>
-    bool IsActive,
+    /// <summary>Nombre descriptivo.</summary>
+    string Name,
+    /// <summary>Monto estimado.</summary>
+    decimal EstimatedAmount,
+    /// <summary>Etapa actual del pipeline.</summary>
+    string Stage,
+    /// <summary>Probabilidad de cierre (0–100).</summary>
+    int Probability,
+    /// <summary>Fecha estimada de cierre.</summary>
+    DateTime? ExpectedCloseDate,
+    /// <summary>Nombre de la cuenta asociada.</summary>
+    string AccountName,
+    /// <summary>Nombre del contacto principal.</summary>
+    string ContactName,
     /// <summary>Fecha de creación.</summary>
     DateTime CreatedAt
 );
@@ -709,8 +836,12 @@ public static class DependencyInjection
         // Repositorio genérico (abierto para cualquier entidad)
         services.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
 
-        // Repositorios específicos
-        services.AddScoped<IUserRepository, UserRepository>();
+        // Repositorios específicos CRM
+        services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IOpportunityRepository, OpportunityRepository>();
+        services.AddScoped<IActivityRepository, ActivityRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         return services;
     }
@@ -754,8 +885,8 @@ public static class DependencyInjection
 | Campo privado | _camelCase | `_userRepository` |
 | DTO | PascalCase + sufijo | `UserDto`, `CreateUserCommand` |
 | Repositorio genérico | `DapperRepository<T>` | `DapperRepository<User>` |
-| Repositorio específico | `{Entity}Repository.cs` | `UserRepository.cs` |
-| Stored Procedure | `sp_PascalCase` | `sp_GetSalesReport` |
+| Repositorio específico | `{Entity}Repository.cs` | `OpportunityRepository.cs` |
+| Stored Procedure | `sp_PascalCase` | `sp_GetSalesPipelineReport` |
 
 ## Antipatrones a evitar
 

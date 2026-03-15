@@ -1,0 +1,95 @@
+<div class="user-list">
+  <div class="user-list__header">
+    <div>
+      <h2 class="user-list__title">Usuarios</h2>
+      <p class="user-list__subtitle">Gestiona los usuarios del sistema</p>
+    </div>
+    <a routerLink="new" class="btn btn--primary">
+      + Nuevo usuario
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="user-list__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="user-list__loading">Cargando usuarios...</div>
+  } @else {
+    <div class="user-list__table-wrapper">
+      <table class="user-list__table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td class="user-list__name">{{ user.firstName }} {{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="user-list__role" [class]="'user-list__role--' + user.role.toLowerCase()">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>
+                <span class="user-list__status" [class.user-list__status--active]="user.isActive" [class.user-list__status--inactive]="!user.isActive">
+                  {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="user-list__date">{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="user-list__actions">
+                <a [routerLink]="[user.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar usuario">
+                  Editar
+                </a>
+                <button
+                  class="btn btn--sm"
+                  [class.btn--success]="!user.isActive"
+                  [class.btn--danger]="user.isActive"
+                  (click)="onToggleStatus(user)"
+                  [attr.aria-label]="user.isActive ? 'Desactivar usuario' : 'Activar usuario'"
+                >
+                  {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="user-list__empty">No hay usuarios registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="user-list__pagination">
+        <button
+          class="btn btn--sm btn--outline"
+          [disabled]="currentPage() <= 1"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          Anterior
+        </button>
+        <span class="user-list__page-info">
+          Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} usuarios)
+        </span>
+        <button
+          class="btn btn--sm btn--outline"
+          [disabled]="currentPage() >= totalPages()"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  }
+</div>

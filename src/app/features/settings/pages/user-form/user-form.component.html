@@ -1,0 +1,147 @@
+<div class="user-form">
+  <div class="user-form__header">
+    <h2 class="user-form__title">
+      {{ isEditMode() ? 'Editar usuario' : 'Nuevo usuario' }}
+    </h2>
+    <a routerLink="../" class="user-form__back">← Volver al listado</a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="user-form__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <div class="user-form__card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="user-form__body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName" class="form-label">Nombre</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="form-input"
+            placeholder="Nombre"
+          />
+          @if (form.controls.firstName.touched && form.controls.firstName.errors) {
+            <span class="form-error">
+              @if (form.controls.firstName.errors['required']) {
+                El nombre es obligatorio
+              } @else if (form.controls.firstName.errors['maxlength']) {
+                Máximo 100 caracteres
+              }
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="lastName" class="form-label">Apellido</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="form-input"
+            placeholder="Apellido"
+          />
+          @if (form.controls.lastName.touched && form.controls.lastName.errors) {
+            <span class="form-error">
+              @if (form.controls.lastName.errors['required']) {
+                El apellido es obligatorio
+              } @else if (form.controls.lastName.errors['maxlength']) {
+                Máximo 100 caracteres
+              }
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          placeholder="usuario@email.com"
+          autocomplete="email"
+        />
+        @if (form.controls.email.touched && form.controls.email.errors) {
+          <span class="form-error">
+            @if (form.controls.email.errors['required']) {
+              El correo es obligatorio
+            } @else if (form.controls.email.errors['email']) {
+              Ingresa un correo válido
+            }
+          </span>
+        }
+      </div>
+
+      @if (!isEditMode()) {
+        <div class="form-group">
+          <label for="password" class="form-label">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            class="form-input"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password"
+          />
+          @if (form.controls.password.touched && form.controls.password.errors) {
+            <span class="form-error">
+              @if (form.controls.password.errors['required']) {
+                La contraseña es obligatoria
+              } @else if (form.controls.password.errors['minlength']) {
+                Mínimo 8 caracteres
+              }
+            </span>
+          }
+        </div>
+      }
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="role" class="form-label">Rol</label>
+          <select id="role" formControlName="role" class="form-input">
+            @for (role of roles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </div>
+
+        @if (isEditMode()) {
+          <div class="form-group">
+            <label for="isActive" class="form-label">Estado</label>
+            <div class="form-toggle">
+              <label class="toggle">
+                <input id="isActive" type="checkbox" formControlName="isActive" />
+                <span class="toggle__slider"></span>
+                <span class="toggle__label">
+                  {{ form.controls.isActive.value ? 'Activo' : 'Inactivo' }}
+                </span>
+              </label>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="user-form__actions">
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="form.invalid || loading()"
+        >
+          @if (loading()) {
+            Guardando...
+          } @else {
+            {{ isEditMode() ? 'Actualizar' : 'Crear usuario' }}
+          }
+        </button>
+        <a routerLink="../" class="btn btn--secondary">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

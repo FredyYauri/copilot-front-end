@@ -8,6 +8,12 @@
         <span class="sidebar__icon">📊</span>
         Dashboard
       </a>
+      @if (authService.user()?.role === 'Admin') {
+        <a routerLink="/settings" routerLinkActive="active" class="sidebar__link">
+          <span class="sidebar__icon">⚙️</span>
+          Configuración
+        </a>
+      }
     </nav>
     <div class="sidebar__footer">
       <button class="sidebar__logout" (click)="onLogout()">
@@ -23,6 +29,7 @@
       <div class="topbar__right">
         @if (authService.user(); as user) {
           <span class="topbar__user">{{ user.firstName }} {{ user.lastName }}</span>
+          <span class="topbar__role">{{ user.role }}</span>
         }
       </div>
     </header>

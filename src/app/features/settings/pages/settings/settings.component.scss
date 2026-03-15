@@ -1,0 +1,81 @@
+@use '../../../../../styles/variables' as *;
+
+.settings {
+  display: flex;
+  gap: $spacing-xl;
+  min-height: calc(100vh - 120px);
+
+  &__nav {
+    width: 240px;
+    flex-shrink: 0;
+    background-color: $white;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-sm;
+    border: 1px solid $gray-200;
+    padding: $spacing-lg;
+    height: fit-content;
+  }
+
+  &__nav-title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $gray-500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid $gray-200;
+  }
+
+  &__menu {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__menu-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: $gray-600;
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(.settings__menu-item--disabled) {
+      color: $gray-900;
+      background-color: $gray-50;
+    }
+
+    &.active {
+      color: $primary;
+      background-color: rgba($primary, 0.08);
+      font-weight: 500;
+    }
+
+    &--disabled {
+      color: $gray-400;
+      cursor: default;
+    }
+  }
+
+  &__menu-icon {
+    font-size: $font-size-base;
+  }
+
+  &__badge {
+    margin-left: auto;
+    font-size: $font-size-xs;
+    color: $gray-400;
+    background-color: $gray-100;
+    padding: 2px 6px;
+    border-radius: $border-radius-sm;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+}
