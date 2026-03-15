@@ -1,0 +1,39 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.auth-layout {
+  @include flex-center;
+  min-height: 100vh;
+  background-color: $gray-100;
+
+  &__container {
+    width: 100%;
+    max-width: 420px;
+    padding: $spacing-xl;
+  }
+
+  &__brand {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__logo {
+    font-size: $font-size-3xl;
+    font-weight: 700;
+    color: $primary;
+    letter-spacing: -0.025em;
+  }
+
+  &__tagline {
+    margin-top: $spacing-xs;
+    font-size: $font-size-sm;
+    color: $gray-500;
+  }
+
+  &__content {
+    background-color: $white;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-lg;
+    padding: $spacing-2xl;
+  }
+}

@@ -1,0 +1,92 @@
+@use '../../../../../styles/variables' as *;
+@use '../../../../../styles/mixins' as *;
+
+.login {
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: 600;
+    color: $gray-900;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__error {
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: $danger;
+    background-color: rgba($danger, 0.08);
+    border: 1px solid rgba($danger, 0.2);
+    border-radius: $border-radius-md;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__forgot {
+    text-align: right;
+    margin-top: -$spacing-sm;
+  }
+
+  &__forgot-link {
+    font-size: $font-size-sm;
+    color: $primary;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.form-label {
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $gray-700;
+}
+
+.form-input {
+  @include input-base;
+}
+
+.form-error {
+  font-size: $font-size-xs;
+  color: $danger;
+}
+
+.btn {
+  @include button-base;
+  width: 100%;
+
+  &--primary {
+    @include button-primary;
+    width: 100%;
+  }
+
+  &--secondary {
+    @include button-secondary;
+    width: 100%;
+  }
+}
