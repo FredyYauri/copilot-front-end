@@ -2,7 +2,7 @@
 @use '../../../../../styles/variables' as *;
 @use '../../../../../styles/mixins' as *;
 
-.user-list {
+.permission-list {
   &__header {
     @include flex-between;
     margin-bottom: $spacing-xl;
@@ -79,32 +79,18 @@
     }
   }
 
-  &__name {
+  &__code {
     font-weight: 500;
     color: $gray-900;
+    font-family: monospace;
+    font-size: $font-size-xs;
   }
 
-  &__role {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: $border-radius-sm;
-    font-size: $font-size-xs;
-    font-weight: 500;
-
-    &--admin {
-      color: $primary;
-      background-color: rgba($primary, 0.1);
-    }
-
-    &--manager {
-      color: $warning;
-      background-color: rgba($warning, 0.1);
-    }
-
-    &--user {
-      color: $secondary;
-      background-color: rgba($secondary, 0.1);
-    }
+  &__description {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__status {
@@ -125,6 +111,16 @@
     }
   }
 
+  &__type {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-xs;
+    font-weight: 500;
+    color: $gray-600;
+    background-color: $gray-100;
+  }
+
   &__date {
     color: $gray-500;
     font-size: $font-size-xs;
@@ -133,6 +129,12 @@
   &__actions {
     display: flex;
     gap: $spacing-xs;
+  }
+
+  &__protected {
+    font-size: $font-size-xs;
+    color: $gray-400;
+    font-style: italic;
   }
 
   &__empty {
@@ -199,21 +201,23 @@
     }
   }
 
-  &--success {
-    color: $white;
-    background-color: $success;
+  &--danger-outline {
+    color: $danger;
+    background-color: $white;
+    border: 1px solid $danger;
 
     &:hover:not(:disabled) {
-      background-color: color.adjust($success, $lightness: -10%);
+      background-color: rgba($danger, 0.05);
     }
   }
 
-  &--danger {
-    color: $white;
-    background-color: $danger;
+  &--success-outline {
+    color: $success;
+    background-color: $white;
+    border: 1px solid $success;
 
     &:hover:not(:disabled) {
-      background-color: color.adjust($danger, $lightness: -10%);
+      background-color: rgba($success, 0.05);
     }
   }
 }

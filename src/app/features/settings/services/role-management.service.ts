@@ -45,7 +45,7 @@ export class RoleManagementService {
   }
 
   getPermissions(): Observable<PermissionGroup[]> {
-    return this.http.get<PermissionGroup[]>(`${this.apiUrl}/permissions`)
+    return this.http.get<PermissionGroup[]>(`${this.apiUrl}/permissions/grouped`)
       .pipe(catchError(error => throwError(() => error)));
   }
 

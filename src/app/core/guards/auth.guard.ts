@@ -35,3 +35,15 @@ export const adminGuard: CanActivateFn = () => {
 
   return router.createUrlTree(['/dashboard']);
 };
+
+export const permissionGuard: CanActivateFn = (route) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const permissions = route.data?.['permissions'] as string[] | undefined;
+  if (!permissions || authService.hasAnyPermission(...permissions)) {
+    return true;
+  }
+
+  return router.createUrlTree(['/dashboard']);
+};

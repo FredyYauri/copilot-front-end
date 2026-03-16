@@ -42,6 +42,21 @@ export const SETTINGS_ROUTES: Routes = [
           .then(m => m.PermissionAssignmentComponent)
       },
       {
+        path: 'permissions',
+        loadComponent: () => import('./pages/permission-list/permission-list.component')
+          .then(m => m.PermissionListComponent)
+      },
+      {
+        path: 'permissions/new',
+        loadComponent: () => import('./pages/permission-form/permission-form.component')
+          .then(m => m.PermissionFormComponent)
+      },
+      {
+        path: 'permissions/:id/edit',
+        loadComponent: () => import('./pages/permission-form/permission-form.component')
+          .then(m => m.PermissionFormComponent)
+      },
+      {
         path: '',
         redirectTo: 'users',
         pathMatch: 'full'

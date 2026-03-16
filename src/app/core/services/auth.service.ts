@@ -18,6 +18,16 @@ export class AuthService {
   readonly isAuthenticated = computed(() => !!this.token());
   readonly accessToken = this.token.asReadonly();
 
+  hasPermission(code: string): boolean {
+    return this.currentUser()?.permissions?.includes(code) ?? false;
+  }
+
+  hasAnyPermission(...codes: string[]): boolean {
+    const perms = this.currentUser()?.permissions;
+    if (!perms) return false;
+    return codes.some(c => perms.includes(c));
+  }
+
   constructor() {
     this.loadStoredSession();
   }

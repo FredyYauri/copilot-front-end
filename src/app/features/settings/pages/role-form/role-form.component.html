@@ -3,7 +3,7 @@
     <h2 class="role-form__title">
       {{ isEditMode() ? 'Editar rol' : 'Nuevo rol' }}
     </h2>
-    <a routerLink="../" class="role-form__back">← Volver al listado</a>
+    <button type="button" class="role-form__back" (click)="goBack()">← Volver al listado</button>
   </div>
 
   @if (errorMessage()) {
@@ -85,9 +85,9 @@
             {{ isEditMode() ? 'Actualizar' : 'Crear rol' }}
           }
         </button>
-        <a routerLink="../" class="btn btn--secondary">
+        <button type="button" class="btn btn--secondary" (click)="goBack()">
           Cancelar
-        </a>
+        </button>
       </div>
     </form>
   </div>

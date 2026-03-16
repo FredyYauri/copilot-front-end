@@ -72,23 +72,47 @@
 
     @if (totalPages() > 1) {
       <div class="user-list__pagination">
-        <button
-          class="btn btn--sm btn--outline"
-          [disabled]="currentPage() <= 1"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          Anterior
-        </button>
-        <span class="user-list__page-info">
-          Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} usuarios)
-        </span>
-        <button
-          class="btn btn--sm btn--outline"
-          [disabled]="currentPage() >= totalPages()"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          Siguiente
-        </button>
+        <div class="user-list__page-size">
+          <label for="user-page-size">Mostrar</label>
+          <select id="user-page-size" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <div class="user-list__page-controls">
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)"
+          >
+            Anterior
+          </button>
+          <span class="user-list__page-info">
+            Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} usuarios)
+          </span>
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    } @else if (totalCount() > 0) {
+      <div class="user-list__pagination">
+        <div class="user-list__page-size">
+          <label for="user-page-size-single">Mostrar</label>
+          <select id="user-page-size-single" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <span class="user-list__page-info">{{ totalCount() }} usuarios</span>
       </div>
     }
   }

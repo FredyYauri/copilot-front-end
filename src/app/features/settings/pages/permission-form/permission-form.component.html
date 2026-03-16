@@ -1,0 +1,111 @@
+<div class="permission-form">
+  <div class="permission-form__header">
+    <h2 class="permission-form__title">
+      {{ isEditMode() ? 'Editar permiso' : 'Nuevo permiso' }}
+    </h2>
+    <button type="button" class="permission-form__back" (click)="goBack()">← Volver al listado</button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="permission-form__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <div class="permission-form__card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="permission-form__body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="resource" class="form-label">Recurso</label>
+          <input
+            id="resource"
+            type="text"
+            formControlName="resource"
+            class="form-input"
+            placeholder="Ej: users, clients, reports"
+          />
+          @if (form.controls.resource.touched && form.controls.resource.errors) {
+            <span class="form-error">
+              @if (form.controls.resource.errors['required']) {
+                El recurso es obligatorio
+              } @else if (form.controls.resource.errors['maxlength']) {
+                Máximo 100 caracteres
+              }
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="action" class="form-label">Acción</label>
+          <input
+            id="action"
+            type="text"
+            formControlName="action"
+            class="form-input"
+            placeholder="Ej: read, create, update, delete"
+          />
+          @if (form.controls.action.touched && form.controls.action.errors) {
+            <span class="form-error">
+              @if (form.controls.action.errors['required']) {
+                La acción es obligatoria
+              } @else if (form.controls.action.errors['maxlength']) {
+                Máximo 100 caracteres
+              }
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Descripción</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-input form-input--textarea"
+          placeholder="Describe qué permite este permiso"
+          rows="3"
+        ></textarea>
+        @if (form.controls.description.touched && form.controls.description.errors) {
+          <span class="form-error">
+            @if (form.controls.description.errors['required']) {
+              La descripción es obligatoria
+            } @else if (form.controls.description.errors['maxlength']) {
+              Máximo 500 caracteres
+            }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="type" class="form-label">Tipo</label>
+        <select id="type" formControlName="type" class="form-input">
+          @for (permType of permissionTypes; track permType.value) {
+            <option [value]="permType.value">{{ permType.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="permission-form__preview">
+        <span class="form-label">Código generado:</span>
+        <code class="permission-form__code">{{ form.controls.resource.value }}.{{ form.controls.action.value }}</code>
+      </div>
+
+      <div class="permission-form__actions">
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="form.invalid || loading()"
+        >
+          @if (loading()) {
+            Guardando...
+          } @else {
+            {{ isEditMode() ? 'Actualizar' : 'Crear permiso' }}
+          }
+        </button>
+        <button type="button" class="btn btn--secondary" (click)="goBack()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

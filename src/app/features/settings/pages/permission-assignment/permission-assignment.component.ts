@@ -1,12 +1,13 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { RoleManagementService } from '../../services/role-management.service';
 import { PermissionGroup, Permission } from '../../models/role.model';
 
 @Component({
   selector: 'app-permission-assignment',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './permission-assignment.component.html',
   styleUrl: './permission-assignment.component.scss'
@@ -14,6 +15,7 @@ import { PermissionGroup, Permission } from '../../models/role.model';
 export class PermissionAssignmentComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
   private readonly roleService = inject(RoleManagementService);
 
   readonly loading = signal(false);
@@ -118,5 +120,9 @@ export class PermissionAssignmentComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

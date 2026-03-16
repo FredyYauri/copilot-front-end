@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { ReactiveFormsModule, FormControl, Validators, NonNullableFormBuilder } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { UserManagementService } from '../../services/user-management.service';
 import { RoleManagementService } from '../../services/role-management.service';
 import { Role } from '../../models/role.model';
@@ -17,7 +18,7 @@ interface UserFormControls {
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.scss'
@@ -26,6 +27,7 @@ export class UserFormComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
   private readonly userService = inject(UserManagementService);
   private readonly roleService = inject(RoleManagementService);
 
@@ -128,5 +130,9 @@ export class UserFormComponent implements OnInit {
         this.errorMessage.set('Error al cargar los roles.');
       }
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

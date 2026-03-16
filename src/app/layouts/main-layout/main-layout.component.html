@@ -4,15 +4,31 @@
       <h2 class="sidebar__logo">CRM</h2>
     </div>
     <nav class="sidebar__nav">
-      <a routerLink="/dashboard" routerLinkActive="active" class="sidebar__link">
-        <span class="sidebar__icon">📊</span>
-        Dashboard
-      </a>
-      @if (authService.user()?.role === 'Administrador') {
-        <a routerLink="/settings" routerLinkActive="active" class="sidebar__link">
-          <span class="sidebar__icon">⚙️</span>
-          Configuración
-        </a>
+      @for (item of visibleMenu(); track item.route) {
+        @if (item.children) {
+          <button class="sidebar__link sidebar__accordion-toggle"
+                  [class.open]="isMenuOpen(item.route)"
+                  (click)="toggleMenu(item.route)">
+            <span class="sidebar__icon">{{ item.icon }}</span>
+            {{ item.label }}
+            <span class="sidebar__arrow">&#9656;</span>
+          </button>
+          @if (isMenuOpen(item.route)) {
+            <div class="sidebar__submenu">
+              @for (child of item.children; track child.route) {
+                <a [routerLink]="child.route" routerLinkActive="active" class="sidebar__sublink">
+                  <span class="sidebar__subicon">{{ child.icon }}</span>
+                  {{ child.label }}
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <a [routerLink]="item.route" routerLinkActive="active" class="sidebar__link">
+            <span class="sidebar__icon">{{ item.icon }}</span>
+            {{ item.label }}
+          </a>
+        }
       }
     </nav>
     <div class="sidebar__footer">

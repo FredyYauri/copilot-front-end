@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { ReactiveFormsModule, FormControl, Validators, NonNullableFormBuilder } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { RoleManagementService } from '../../services/role-management.service';
 
 interface RoleFormControls {
@@ -12,7 +13,7 @@ interface RoleFormControls {
 @Component({
   selector: 'app-role-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './role-form.component.html',
   styleUrl: './role-form.component.scss'
@@ -21,6 +22,7 @@ export class RoleFormComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
   private readonly roleService = inject(RoleManagementService);
 
   readonly isEditMode = signal(false);
@@ -104,5 +106,9 @@ export class RoleFormComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

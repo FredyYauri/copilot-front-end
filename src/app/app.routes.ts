@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, adminGuard } from '@core/guards/auth.guard';
+import { authGuard, permissionGuard } from '@core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -24,7 +24,8 @@ export const routes: Routes = [
         path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes')
           .then(m => m.SETTINGS_ROUTES),
-        canActivate: [adminGuard]
+        canActivate: [permissionGuard],
+        data: { permissions: ['users.read', 'roles.read', 'permissions.read'] }
       },
       {
         path: '',

@@ -68,23 +68,47 @@
 
     @if (totalPages() > 1) {
       <div class="role-list__pagination">
-        <button
-          class="btn btn--sm btn--outline"
-          [disabled]="currentPage() <= 1"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          Anterior
-        </button>
-        <span class="role-list__page-info">
-          Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} roles)
-        </span>
-        <button
-          class="btn btn--sm btn--outline"
-          [disabled]="currentPage() >= totalPages()"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          Siguiente
-        </button>
+        <div class="role-list__page-size">
+          <label for="role-page-size">Mostrar</label>
+          <select id="role-page-size" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <div class="role-list__page-controls">
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)"
+          >
+            Anterior
+          </button>
+          <span class="role-list__page-info">
+            Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} roles)
+          </span>
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    } @else if (totalCount() > 0) {
+      <div class="role-list__pagination">
+        <div class="role-list__page-size">
+          <label for="role-page-size-single">Mostrar</label>
+          <select id="role-page-size-single" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <span class="role-list__page-info">{{ totalCount() }} roles</span>
       </div>
     }
   }

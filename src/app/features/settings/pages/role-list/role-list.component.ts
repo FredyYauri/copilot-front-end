@@ -19,6 +19,8 @@ export class RoleListComponent implements OnInit {
   readonly roles = signal<Role[]>([]);
   readonly loading = signal(false);
   readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
+  readonly pageSizeOptions = [5, 10, 25, 50];
   readonly totalPages = signal(0);
   readonly totalCount = signal(0);
   readonly errorMessage = signal('');
@@ -30,7 +32,7 @@ export class RoleListComponent implements OnInit {
   loadRoles(): void {
     this.loading.set(true);
     this.errorMessage.set('');
-    this.roleService.getRoles(this.currentPage(), 10).subscribe({
+    this.roleService.getRoles(this.currentPage(), this.pageSize()).subscribe({
       next: (result: PagedResult<Role>) => {
         this.roles.set(result.items);
         this.totalPages.set(result.totalPages);
@@ -46,6 +48,12 @@ export class RoleListComponent implements OnInit {
 
   goToPage(page: number): void {
     this.currentPage.set(page);
+    this.loadRoles();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
     this.loadRoles();
   }
 }

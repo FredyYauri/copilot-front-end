@@ -6,7 +6,7 @@
         <p class="perm-assign__subtitle">Rol: <strong>{{ roleName() }}</strong></p>
       }
     </div>
-    <a routerLink="../../" class="perm-assign__back">← Volver al listado</a>
+    <button type="button" class="perm-assign__back" (click)="goBack()">← Volver al listado</button>
   </div>
 
   @if (errorMessage()) {
@@ -69,9 +69,9 @@
           Guardar permisos
         }
       </button>
-      <a routerLink="../../" class="btn btn--secondary">
+      <button type="button" class="btn btn--secondary" (click)="goBack()">
         Cancelar
-      </a>
+      </button>
     </div>
   }
 </div>

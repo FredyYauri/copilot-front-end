@@ -18,6 +18,8 @@ export class UserListComponent implements OnInit {
   readonly users = signal<UserManagement[]>([]);
   readonly loading = signal(false);
   readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
+  readonly pageSizeOptions = [5, 10, 25, 50];
   readonly totalPages = signal(0);
   readonly totalCount = signal(0);
   readonly errorMessage = signal('');
@@ -30,7 +32,7 @@ export class UserListComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.userService.getUsers(this.currentPage(), 10).subscribe({
+    this.userService.getUsers(this.currentPage(), this.pageSize()).subscribe({
       next: (result: PagedResult<UserManagement>) => {
         this.users.set(result.items);
         this.totalPages.set(result.totalPages);
@@ -46,6 +48,12 @@ export class UserListComponent implements OnInit {
 
   goToPage(page: number): void {
     this.currentPage.set(page);
+    this.loadUsers();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
     this.loadUsers();
   }
 
