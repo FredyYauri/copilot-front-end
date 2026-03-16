@@ -2,13 +2,15 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@ang
 import { ReactiveFormsModule, FormControl, Validators, NonNullableFormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { UserManagementService } from '../../services/user-management.service';
+import { RoleManagementService } from '../../services/role-management.service';
+import { Role } from '../../models/role.model';
 
 interface UserFormControls {
   firstName: FormControl<string>;
   lastName: FormControl<string>;
   email: FormControl<string>;
   password: FormControl<string>;
-  role: FormControl<string>;
+  roleId: FormControl<string>;
   isActive: FormControl<boolean>;
 }
 
@@ -25,24 +27,25 @@ export class UserFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly userService = inject(UserManagementService);
+  private readonly roleService = inject(RoleManagementService);
 
   readonly isEditMode = signal(false);
   readonly loading = signal(false);
   readonly errorMessage = signal('');
   readonly userId = signal('');
+  readonly roles = signal<Role[]>([]);
 
   form = this.fb.group<UserFormControls>({
     firstName: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
     lastName: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
     email: this.fb.control('', [Validators.required, Validators.email, Validators.maxLength(256)]),
     password: this.fb.control('', [Validators.required, Validators.minLength(8)]),
-    role: this.fb.control('User', [Validators.required]),
+    roleId: this.fb.control('', [Validators.required]),
     isActive: this.fb.control(true)
   });
 
-  readonly roles = ['User', 'Admin', 'Manager'];
-
   ngOnInit(): void {
+    this.loadRoles();
     const id = this.route.snapshot.params['id'];
     if (id) {
       this.isEditMode.set(true);
@@ -67,9 +70,9 @@ export class UserFormComponent implements OnInit {
   }
 
   private createUser(): void {
-    const { firstName, lastName, email, password, role } = this.form.getRawValue();
+    const { firstName, lastName, email, password, roleId } = this.form.getRawValue();
 
-    this.userService.createUser({ firstName, lastName, email, password, role }).subscribe({
+    this.userService.createUser({ firstName, lastName, email, password, roleId }).subscribe({
       next: () => {
         this.loading.set(false);
         this.router.navigate(['../'], { relativeTo: this.route });
@@ -82,9 +85,9 @@ export class UserFormComponent implements OnInit {
   }
 
   private updateUser(): void {
-    const { firstName, lastName, email, role, isActive } = this.form.getRawValue();
+    const { firstName, lastName, email, roleId, isActive } = this.form.getRawValue();
 
-    this.userService.updateUser(this.userId(), { firstName, lastName, email, role, isActive }).subscribe({
+    this.userService.updateUser(this.userId(), { firstName, lastName, email, roleId, isActive }).subscribe({
       next: () => {
         this.loading.set(false);
         this.router.navigate(['../../'], { relativeTo: this.route });
@@ -104,7 +107,7 @@ export class UserFormComponent implements OnInit {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          role: user.role,
+          roleId: user.roleId,
           isActive: user.isActive
         });
         this.loading.set(false);
@@ -112,6 +115,17 @@ export class UserFormComponent implements OnInit {
       error: () => {
         this.errorMessage.set('Error al cargar el usuario.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  private loadRoles(): void {
+    this.roleService.getRoles(1, 100).subscribe({
+      next: (result) => {
+        this.roles.set(result.items.filter(r => r.isActive));
+      },
+      error: () => {
+        this.errorMessage.set('Error al cargar los roles.');
       }
     });
   }

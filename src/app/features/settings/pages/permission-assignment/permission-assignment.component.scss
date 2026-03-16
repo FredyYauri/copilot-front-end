@@ -1,0 +1,183 @@
+@use '../../../../../styles/variables' as *;
+@use '../../../../../styles/mixins' as *;
+
+.perm-assign {
+  &__header {
+    @include flex-between;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    color: $gray-900;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    margin-top: $spacing-xs;
+  }
+
+  &__back {
+    font-size: $font-size-sm;
+    color: $primary;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
+  }
+
+  &__error {
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: $danger;
+    background-color: rgba($danger, 0.08);
+    border: 1px solid rgba($danger, 0.2);
+    border-radius: $border-radius-md;
+  }
+
+  &__loading {
+    text-align: center;
+    padding: $spacing-2xl;
+    color: $gray-500;
+    font-size: $font-size-sm;
+  }
+
+  &__groups {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-2xl;
+    color: $gray-400;
+    font-size: $font-size-sm;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-xl;
+  }
+}
+
+.perm-group {
+  background-color: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  border: 1px solid $gray-200;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-md;
+    background-color: $gray-50;
+    border-bottom: 1px solid $gray-200;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: $gray-100;
+    }
+  }
+
+  &__check {
+    display: flex;
+    align-items: center;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: $primary;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: $gray-900;
+    text-transform: capitalize;
+    flex: 1;
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    background-color: $white;
+    padding: 2px 8px;
+    border-radius: $border-radius-sm;
+    border: 1px solid $gray-200;
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background-color: $gray-100;
+  }
+}
+
+.perm-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $white;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $gray-50;
+  }
+
+  &--selected {
+    background-color: rgba($primary, 0.03);
+  }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: $primary;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__action {
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: $gray-800;
+    text-transform: capitalize;
+  }
+
+  &__description {
+    font-size: $font-size-xs;
+    color: $gray-500;
+  }
+}
+
+.btn {
+  @include button-base;
+
+  &--primary {
+    @include button-primary;
+  }
+
+  &--secondary {
+    @include button-secondary;
+  }
+}

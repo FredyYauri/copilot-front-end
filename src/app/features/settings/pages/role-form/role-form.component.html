@@ -1,0 +1,94 @@
+<div class="role-form">
+  <div class="role-form__header">
+    <h2 class="role-form__title">
+      {{ isEditMode() ? 'Editar rol' : 'Nuevo rol' }}
+    </h2>
+    <a routerLink="../" class="role-form__back">← Volver al listado</a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="role-form__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isSystem()) {
+    <div class="role-form__warning" role="alert">
+      Este es un rol del sistema. Solo se puede modificar el nombre y la descripción.
+    </div>
+  }
+
+  <div class="role-form__card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="role-form__body">
+      <div class="form-group">
+        <label for="name" class="form-label">Nombre del rol</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="form-input"
+          placeholder="Ej: Supervisor"
+        />
+        @if (form.controls.name.touched && form.controls.name.errors) {
+          <span class="form-error">
+            @if (form.controls.name.errors['required']) {
+              El nombre es obligatorio
+            } @else if (form.controls.name.errors['maxlength']) {
+              Máximo 100 caracteres
+            }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Descripción</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-input form-input--textarea"
+          placeholder="Describe las responsabilidades de este rol"
+          rows="3"
+        ></textarea>
+        @if (form.controls.description.touched && form.controls.description.errors) {
+          <span class="form-error">
+            @if (form.controls.description.errors['maxlength']) {
+              Máximo 500 caracteres
+            }
+          </span>
+        }
+      </div>
+
+      @if (isEditMode() && !isSystem()) {
+        <div class="form-group">
+          <label for="isActive" class="form-label">Estado</label>
+          <div class="form-toggle">
+            <label class="toggle">
+              <input id="isActive" type="checkbox" formControlName="isActive" />
+              <span class="toggle__slider"></span>
+              <span class="toggle__label">
+                {{ form.controls.isActive.value ? 'Activo' : 'Inactivo' }}
+              </span>
+            </label>
+          </div>
+        </div>
+      }
+
+      <div class="role-form__actions">
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="form.invalid || loading()"
+        >
+          @if (loading()) {
+            Guardando...
+          } @else {
+            {{ isEditMode() ? 'Actualizar' : 'Crear rol' }}
+          }
+        </button>
+        <a routerLink="../" class="btn btn--secondary">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

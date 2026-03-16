@@ -1,0 +1,77 @@
+<div class="perm-assign">
+  <div class="perm-assign__header">
+    <div>
+      <h2 class="perm-assign__title">Asignar permisos</h2>
+      @if (roleName()) {
+        <p class="perm-assign__subtitle">Rol: <strong>{{ roleName() }}</strong></p>
+      }
+    </div>
+    <a routerLink="../../" class="perm-assign__back">← Volver al listado</a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="perm-assign__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="perm-assign__loading">Cargando permisos...</div>
+  } @else {
+    <div class="perm-assign__groups">
+      @for (group of permissionGroups(); track group.resource) {
+        <div class="perm-group">
+          <div class="perm-group__header" (click)="toggleGroup(group)">
+            <div class="perm-group__check">
+              <input
+                type="checkbox"
+                [checked]="isGroupFullySelected(group)"
+                [indeterminate]="isGroupPartiallySelected(group)"
+                (click)="$event.stopPropagation(); toggleGroup(group)"
+              />
+            </div>
+            <h3 class="perm-group__title">{{ group.resource }}</h3>
+            <span class="perm-group__count">
+              {{ getGroupSelectedCount(group) }} / {{ group.permissions.length }}
+            </span>
+          </div>
+          <div class="perm-group__body">
+            @for (perm of group.permissions; track perm.id) {
+              <label class="perm-item" [class.perm-item--selected]="isSelected(perm.id)">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(perm.id)"
+                  (change)="togglePermission(perm.id)"
+                />
+                <div class="perm-item__info">
+                  <span class="perm-item__action">{{ perm.action }}</span>
+                  <span class="perm-item__description">{{ perm.description }}</span>
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="perm-assign__empty">No hay permisos disponibles.</div>
+      }
+    </div>
+
+    <div class="perm-assign__actions">
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="saving()"
+        (click)="save()"
+      >
+        @if (saving()) {
+          Guardando...
+        } @else {
+          Guardar permisos
+        }
+      </button>
+      <a routerLink="../../" class="btn btn--secondary">
+        Cancelar
+      </a>
+    </div>
+  }
+</div>

@@ -48,8 +48,8 @@ export class UserManagementService {
     );
   }
 
-  changeRole(id: string, role: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/users/${id}/role`, JSON.stringify(role), {
+  changeRole(id: string, roleId: string): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/users/${id}/role`, JSON.stringify(roleId), {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       catchError(error => throwError(() => error))

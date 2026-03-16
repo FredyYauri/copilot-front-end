@@ -3,6 +3,7 @@ export interface UserManagement {
   firstName: string;
   lastName: string;
   email: string;
+  roleId: string;
   role: string;
   isActive: boolean;
   createdAt: string;
@@ -14,14 +15,14 @@ export interface CreateUserRequest {
   lastName: string;
   email: string;
   password: string;
-  role: string;
+  roleId: string;
 }
 
 export interface UpdateUserRequest {
   firstName: string;
   lastName: string;
   email: string;
-  role: string;
+  roleId: string;
   isActive: boolean;
 }
 

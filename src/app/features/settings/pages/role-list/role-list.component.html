@@ -1,0 +1,91 @@
+<div class="role-list">
+  <div class="role-list__header">
+    <div>
+      <h2 class="role-list__title">Roles</h2>
+      <p class="role-list__subtitle">Gestiona los roles y permisos del sistema</p>
+    </div>
+    <a routerLink="new" class="btn btn--primary">
+      + Nuevo rol
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="role-list__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="role-list__loading">Cargando roles...</div>
+  } @else {
+    <div class="role-list__table-wrapper">
+      <table class="role-list__table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Tipo</th>
+            <th>Usuarios</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (role of roles(); track role.id) {
+            <tr>
+              <td class="role-list__name">{{ role.name }}</td>
+              <td class="role-list__description">{{ role.description }}</td>
+              <td>
+                <span class="role-list__status" [class.role-list__status--active]="role.isActive" [class.role-list__status--inactive]="!role.isActive">
+                  {{ role.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <span class="role-list__type" [class.role-list__type--system]="role.isSystem">
+                  {{ role.isSystem ? 'Sistema' : 'Personalizado' }}
+                </span>
+              </td>
+              <td class="role-list__users-count">{{ role.usersCount }}</td>
+              <td class="role-list__date">{{ role.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="role-list__actions">
+                <a [routerLink]="[role.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar rol">
+                  Editar
+                </a>
+                <a [routerLink]="[role.id, 'permissions']" class="btn btn--sm btn--primary-outline" aria-label="Gestionar permisos">
+                  Permisos
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="role-list__empty">No hay roles registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="role-list__pagination">
+        <button
+          class="btn btn--sm btn--outline"
+          [disabled]="currentPage() <= 1"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          Anterior
+        </button>
+        <span class="role-list__page-info">
+          Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} roles)
+        </span>
+        <button
+          class="btn btn--sm btn--outline"
+          [disabled]="currentPage() >= totalPages()"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  }
+</div>

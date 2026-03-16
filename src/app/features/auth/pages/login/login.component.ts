@@ -38,17 +38,13 @@ export class LoginComponent {
     const { email, password } = this.form.getRawValue();
 
     this.authService.login({ email, password }).subscribe({
-      next: (response) => {
+      next: () => {
         this.loading.set(false);
-        if (response) {
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.errorMessage.set('Credenciales incorrectas. Intenta de nuevo.');
-        }
+        this.router.navigate(['/dashboard']);
       },
-      error: () => {
+      error: (message: string) => {
         this.loading.set(false);
-        this.errorMessage.set('Error de conexión. Intenta más tarde.');
+        this.errorMessage.set(message);
       }
     });
   }

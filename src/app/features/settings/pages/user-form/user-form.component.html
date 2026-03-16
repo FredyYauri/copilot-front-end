@@ -102,12 +102,16 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="role" class="form-label">Rol</label>
-          <select id="role" formControlName="role" class="form-input">
-            @for (role of roles; track role) {
-              <option [value]="role">{{ role }}</option>
+          <label for="roleId" class="form-label">Rol</label>
+          <select id="roleId" formControlName="roleId" class="form-input">
+            <option value="" disabled>Selecciona un rol</option>
+            @for (role of roles(); track role.id) {
+              <option [value]="role.id">{{ role.name }}</option>
             }
           </select>
+          @if (form.controls.roleId.touched && form.controls.roleId.errors) {
+            <span class="form-error">El rol es obligatorio</span>
+          }
         </div>
 
         @if (isEditMode()) {

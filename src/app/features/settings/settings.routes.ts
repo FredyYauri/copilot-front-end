@@ -22,6 +22,26 @@ export const SETTINGS_ROUTES: Routes = [
           .then(m => m.UserFormComponent)
       },
       {
+        path: 'roles',
+        loadComponent: () => import('./pages/role-list/role-list.component')
+          .then(m => m.RoleListComponent)
+      },
+      {
+        path: 'roles/new',
+        loadComponent: () => import('./pages/role-form/role-form.component')
+          .then(m => m.RoleFormComponent)
+      },
+      {
+        path: 'roles/:id/edit',
+        loadComponent: () => import('./pages/role-form/role-form.component')
+          .then(m => m.RoleFormComponent)
+      },
+      {
+        path: 'roles/:id/permissions',
+        loadComponent: () => import('./pages/permission-assignment/permission-assignment.component')
+          .then(m => m.PermissionAssignmentComponent)
+      },
+      {
         path: '',
         redirectTo: 'users',
         pathMatch: 'full'

@@ -8,7 +8,7 @@
         <span class="sidebar__icon">📊</span>
         Dashboard
       </a>
-      @if (authService.user()?.role === 'Admin') {
+      @if (authService.user()?.role === 'Administrador') {
         <a routerLink="/settings" routerLinkActive="active" class="sidebar__link">
           <span class="sidebar__icon">⚙️</span>
           Configuración

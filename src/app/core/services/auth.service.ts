@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { API_URL } from '@core/models/tokens';
 import { LoginRequest, LoginResponse, User, ForgotPasswordRequest } from '@core/models/user.model';
 
@@ -30,7 +30,7 @@ export class AuthService {
         sessionStorage.setItem('accessToken', response.accessToken);
         sessionStorage.setItem('user', JSON.stringify(response.user));
       }),
-      catchError(() => of(null))
+      catchError((error) => throwError(() => error?.error?.detail ?? 'Error de conexión. Intenta más tarde.'))
     );
   }
 
