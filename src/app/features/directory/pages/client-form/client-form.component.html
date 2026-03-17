@@ -1,0 +1,299 @@
+<div class="client-form">
+  <div class="client-form__header">
+    <h1 class="client-form__title">
+      @if (isEditMode()) {
+        Editar Cliente
+      } @else {
+        Nuevo Cliente
+      }
+    </h1>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="client-form__error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading() && isEditMode()) {
+    <div class="client-form__loading">Cargando...</div>
+  } @else {
+    <!-- Tabs -->
+    <div class="client-form__tabs">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="client-form__tab"
+          [class.client-form__tab--active]="activeTab() === tab.id"
+          (click)="setTab(tab.id)">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Tab: General -->
+      @if (activeTab() === 'general') {
+        <div class="client-form__panel">
+          <div class="client-form__grid">
+            <div class="client-form__field">
+              <label class="client-form__label" for="nombre">Nombre *</label>
+              <input
+                id="nombre"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.nombre"
+                [class.client-form__input--error]="generalForm.controls.nombre.touched && generalForm.controls.nombre.invalid" />
+              @if (generalForm.controls.nombre.touched && generalForm.controls.nombre.hasError('required')) {
+                <span class="client-form__error-text">El nombre es requerido.</span>
+              }
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="ruc">RUC</label>
+              <input
+                id="ruc"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.ruc"
+                maxlength="11"
+                [class.client-form__input--error]="generalForm.controls.ruc.touched && generalForm.controls.ruc.invalid" />
+              @if (generalForm.controls.ruc.touched && generalForm.controls.ruc.hasError('pattern')) {
+                <span class="client-form__error-text">El RUC debe tener 11 dígitos.</span>
+              }
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="dni">DNI</label>
+              <input
+                id="dni"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.dni"
+                maxlength="8"
+                [class.client-form__input--error]="generalForm.controls.dni.touched && generalForm.controls.dni.invalid" />
+              @if (generalForm.controls.dni.touched && generalForm.controls.dni.hasError('pattern')) {
+                <span class="client-form__error-text">El DNI debe tener 8 dígitos.</span>
+              }
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="telefono">Teléfono *</label>
+              <input
+                id="telefono"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.telefono"
+                [class.client-form__input--error]="generalForm.controls.telefono.touched && generalForm.controls.telefono.invalid" />
+              @if (generalForm.controls.telefono.touched && generalForm.controls.telefono.hasError('required')) {
+                <span class="client-form__error-text">El teléfono es requerido.</span>
+              }
+            </div>
+
+            <div class="client-form__field client-form__field--full">
+              <label class="client-form__label" for="direccion">Dirección *</label>
+              <input
+                id="direccion"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.direccion"
+                [class.client-form__input--error]="generalForm.controls.direccion.touched && generalForm.controls.direccion.invalid" />
+              @if (generalForm.controls.direccion.touched && generalForm.controls.direccion.hasError('required')) {
+                <span class="client-form__error-text">La dirección es requerida.</span>
+              }
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="distrito">Distrito *</label>
+              <input
+                id="distrito"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.distrito"
+                [class.client-form__input--error]="generalForm.controls.distrito.touched && generalForm.controls.distrito.invalid" />
+              @if (generalForm.controls.distrito.touched && generalForm.controls.distrito.hasError('required')) {
+                <span class="client-form__error-text">El distrito es requerido.</span>
+              }
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="referencia">Referencia</label>
+              <input
+                id="referencia"
+                type="text"
+                class="client-form__input"
+                [formControl]="generalForm.controls.referencia" />
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tab: Contactos -->
+      @if (activeTab() === 'contacts') {
+        <div class="client-form__panel">
+          <div class="client-form__panel-header">
+            <h3 class="client-form__panel-title">Contactos</h3>
+            <button type="button" class="client-form__btn-add" (click)="addContact()">
+              + Agregar Contacto
+            </button>
+          </div>
+
+          @if (contactsForm.length === 0) {
+            <p class="client-form__empty">No hay contactos agregados.</p>
+          }
+
+          @for (contact of contactsForm.controls; track $index; let i = $index) {
+            <div class="client-form__contact-card">
+              <div class="client-form__contact-header">
+                <span class="client-form__contact-number">Contacto {{ i + 1 }}</span>
+                <button type="button" class="client-form__btn-remove" (click)="removeContact(i)">
+                  Eliminar
+                </button>
+              </div>
+              <div class="client-form__grid">
+                <div class="client-form__field">
+                  <label class="client-form__label" [attr.for]="'contactNombre_' + i">Nombre *</label>
+                  <input
+                    [id]="'contactNombre_' + i"
+                    type="text"
+                    class="client-form__input"
+                    [formControl]="contact.controls.nombre"
+                    [class.client-form__input--error]="contact.controls.nombre.touched && contact.controls.nombre.invalid" />
+                  @if (contact.controls.nombre.touched && contact.controls.nombre.hasError('required')) {
+                    <span class="client-form__error-text">El nombre es requerido.</span>
+                  }
+                </div>
+
+                <div class="client-form__field">
+                  <label class="client-form__label" [attr.for]="'contactCargo_' + i">Cargo</label>
+                  <input
+                    [id]="'contactCargo_' + i"
+                    type="text"
+                    class="client-form__input"
+                    [formControl]="contact.controls.cargo" />
+                </div>
+
+                <div class="client-form__field">
+                  <label class="client-form__label" [attr.for]="'contactTelefono_' + i">Teléfono</label>
+                  <input
+                    [id]="'contactTelefono_' + i"
+                    type="text"
+                    class="client-form__input"
+                    [formControl]="contact.controls.telefono" />
+                </div>
+
+                <div class="client-form__field">
+                  <label class="client-form__label" [attr.for]="'contactCorreo_' + i">Correo</label>
+                  <input
+                    [id]="'contactCorreo_' + i"
+                    type="email"
+                    class="client-form__input"
+                    [formControl]="contact.controls.correo"
+                    [class.client-form__input--error]="contact.controls.correo.touched && contact.controls.correo.invalid" />
+                  @if (contact.controls.correo.touched && contact.controls.correo.hasError('email')) {
+                    <span class="client-form__error-text">Correo inválido.</span>
+                  }
+                </div>
+
+                <div class="client-form__field client-form__field--full">
+                  <label class="client-form__label" [attr.for]="'contactComentarios_' + i">Comentarios</label>
+                  <textarea
+                    [id]="'contactComentarios_' + i"
+                    class="client-form__textarea"
+                    [formControl]="contact.controls.comentarios"
+                    rows="2">
+                  </textarea>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tab: Info Comercial -->
+      @if (activeTab() === 'commercial') {
+        <div class="client-form__panel">
+          <div class="client-form__grid">
+            <div class="client-form__field">
+              <label class="client-form__label" for="asesorComercial">Asesor Comercial</label>
+              <input
+                id="asesorComercial"
+                type="text"
+                class="client-form__input"
+                [formControl]="commercialForm.controls.asesorComercial" />
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="codigoAsesor">Código Asesor</label>
+              <input
+                id="codigoAsesor"
+                type="text"
+                class="client-form__input"
+                [formControl]="commercialForm.controls.codigoAsesor" />
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="medioCaptacion">Medio de Captación</label>
+              <input
+                id="medioCaptacion"
+                type="text"
+                class="client-form__input"
+                [formControl]="commercialForm.controls.medioCaptacion" />
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="centralRiesgo">Central de Riesgo</label>
+              <input
+                id="centralRiesgo"
+                type="text"
+                class="client-form__input"
+                [formControl]="commercialForm.controls.centralRiesgo" />
+            </div>
+
+            <div class="client-form__field">
+              <label class="client-form__label" for="lineaCredito">Línea de Crédito</label>
+              <input
+                id="lineaCredito"
+                type="number"
+                class="client-form__input"
+                [formControl]="commercialForm.controls.lineaCredito"
+                step="0.01" />
+            </div>
+
+            <div class="client-form__field client-form__field--full">
+              <label class="client-form__label" for="comercialComentarios">Comentarios</label>
+              <textarea
+                id="comercialComentarios"
+                class="client-form__textarea"
+                [formControl]="commercialForm.controls.comentarios"
+                rows="3">
+              </textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Actions -->
+      <div class="client-form__actions">
+        <button
+          type="button"
+          class="client-form__btn client-form__btn--secondary"
+          (click)="goBack()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="client-form__btn client-form__btn--primary"
+          [disabled]="loading()">
+          @if (loading()) {
+            Guardando...
+          } @else if (isEditMode()) {
+            Actualizar
+          } @else {
+            Crear
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

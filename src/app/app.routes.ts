@@ -21,6 +21,13 @@ export const routes: Routes = [
           .then(m => m.DASHBOARD_ROUTES)
       },
       {
+        path: 'directory',
+        loadChildren: () => import('./features/directory/directory.routes')
+          .then(m => m.DIRECTORY_ROUTES),
+        canActivate: [permissionGuard],
+        data: { permissions: ['clients.read'] }
+      },
+      {
         path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes')
           .then(m => m.SETTINGS_ROUTES),

@@ -1,0 +1,206 @@
+@use '../../../../../styles/variables' as *;
+@use '../../../../../styles/mixins' as *;
+
+.client-form {
+  &__header {
+    @include flex-between;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    color: $gray-900;
+  }
+
+  &__error {
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: $danger;
+    background-color: rgba($danger, 0.08);
+    border: 1px solid rgba($danger, 0.2);
+    border-radius: $border-radius-md;
+  }
+
+  &__loading {
+    text-align: center;
+    padding: $spacing-2xl;
+    color: $gray-500;
+    font-size: $font-size-sm;
+  }
+
+  // Tabs
+  &__tabs {
+    display: flex;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-lg;
+    border-bottom: 2px solid $gray-200;
+  }
+
+  &__tab {
+    @include button-base;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    margin-bottom: -2px;
+
+    &:hover:not(&--active) {
+      color: $gray-700;
+    }
+
+    &--active {
+      color: $primary;
+      border-bottom-color: $primary;
+      font-weight: 600;
+    }
+  }
+
+  // Panel
+  &__panel {
+    background-color: $white;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-sm;
+    border: 1px solid $gray-200;
+    padding: $spacing-xl;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__panel-header {
+    @include flex-between;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__panel-title {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $gray-900;
+  }
+
+  // Grid
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+  }
+
+  // Fields
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: $gray-700;
+  }
+
+  &__input {
+    @include input-base;
+
+    &--error {
+      border-color: $danger;
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($danger, 0.15);
+      }
+    }
+  }
+
+  &__textarea {
+    @include input-base;
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  &__error-text {
+    font-size: $font-size-xs;
+    color: $danger;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-lg;
+    color: $gray-500;
+    font-size: $font-size-sm;
+  }
+
+  // Contact cards
+  &__contact-card {
+    background-color: $gray-50;
+    border: 1px solid $gray-200;
+    border-radius: $border-radius-md;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__contact-header {
+    @include flex-between;
+    margin-bottom: $spacing-md;
+  }
+
+  &__contact-number {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $gray-700;
+  }
+
+  // Buttons
+  &__btn-add {
+    @include button-base;
+    padding: $spacing-xs $spacing-md;
+    font-size: $font-size-sm;
+    color: $primary;
+    background-color: rgba($primary, 0.08);
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      background-color: rgba($primary, 0.15);
+    }
+  }
+
+  &__btn-remove {
+    @include button-base;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    color: $danger;
+    background: none;
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      background-color: rgba($danger, 0.08);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-sm;
+  }
+
+  &__btn {
+    @include button-base;
+
+    &--primary {
+      @include button-primary;
+    }
+
+    &--secondary {
+      @include button-secondary;
+    }
+  }
+}

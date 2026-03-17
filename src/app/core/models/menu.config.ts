@@ -13,6 +13,14 @@ export const MENU_CONFIG: MenuItem[] = [
     route: '/dashboard',
   },
   {
+    label: 'Directorio',
+    icon: '📁',
+    route: '/directory',
+    children: [
+      { label: 'Clientes', icon: '🏢', route: '/directory/clients', permissions: ['clients.read'] },
+    ]
+  },
+  {
     label: 'Configuración',
     icon: '⚙️',
     route: '/settings',

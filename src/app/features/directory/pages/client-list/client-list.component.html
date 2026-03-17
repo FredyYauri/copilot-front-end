@@ -1,0 +1,110 @@
+<div class="client-list">
+  <div class="client-list__header">
+    <div>
+      <h2 class="client-list__title">Clientes</h2>
+      <p class="client-list__subtitle">Gestiona los clientes del directorio</p>
+    </div>
+    <a routerLink="new" class="btn btn--primary">
+      + Nuevo cliente
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="client-list__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="client-list__loading">Cargando clientes...</div>
+  } @else {
+    <div class="client-list__table-wrapper">
+      <table class="client-list__table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>RUC</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Distrito</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (client of clients(); track client.id) {
+            <tr>
+              <td class="client-list__name">{{ client.nombre }}</td>
+              <td>{{ client.ruc ?? '—' }}</td>
+              <td>{{ client.dni ?? '—' }}</td>
+              <td>{{ client.telefono }}</td>
+              <td>{{ client.distrito }}</td>
+              <td>
+                <span class="client-list__status" [class.client-list__status--active]="client.isActive" [class.client-list__status--inactive]="!client.isActive">
+                  {{ client.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="client-list__date">{{ client.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="client-list__actions">
+                <a [routerLink]="[client.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar cliente">
+                  Editar
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="client-list__empty">No hay clientes registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="client-list__pagination">
+        <div class="client-list__page-size">
+          <label for="client-page-size">Mostrar</label>
+          <select id="client-page-size" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <div class="client-list__page-controls">
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)"
+          >
+            Anterior
+          </button>
+          <span class="client-list__page-info">
+            Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} clientes)
+          </span>
+          <button
+            class="btn btn--sm btn--outline"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    } @else if (totalCount() > 0) {
+      <div class="client-list__pagination">
+        <div class="client-list__page-size">
+          <label for="client-page-size-single">Mostrar</label>
+          <select id="client-page-size-single" (change)="onPageSizeChange(+$any($event.target).value)">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+          <span>por página</span>
+        </div>
+        <span class="client-list__page-info">{{ totalCount() }} clientes</span>
+      </div>
+    }
+  }
+</div>
