@@ -85,6 +85,19 @@ export interface ClientSearch {
   telefono: string;
 }
 
+export interface UpdateClientContactsRequest {
+  contacts: CreateClientContact[];
+}
+
+export interface UpdateClientCommercialInfoRequest {
+  asesorComercial: string | null;
+  codigoAsesor: string | null;
+  medioCaptacion: string | null;
+  centralRiesgo: string | null;
+  lineaCredito: number | null;
+  comentarios: string | null;
+}
+
 export interface PagedResult<T> {
   items: T[];
   totalCount: number;

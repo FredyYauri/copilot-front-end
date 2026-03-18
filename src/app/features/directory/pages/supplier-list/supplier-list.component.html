@@ -1,0 +1,118 @@
+<div class="supplier-list">
+  <div class="supplier-list__header">
+    <div>
+      <h2 class="supplier-list__title">Proveedores</h2>
+      <p class="supplier-list__subtitle">Gestiona los proveedores del directorio</p>
+    </div>
+    @if (canCreate) {
+      <a routerLink="new" class="btn btn--primary">
+        + Nuevo proveedor
+      </a>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="supplier-list__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="supplier-list__loading">Cargando proveedores...</div>
+  } @else {
+    <div class="supplier-list__table-wrapper">
+      <table class="supplier-list__table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>RUC</th>
+            <th>Teléfono</th>
+            <th>Ciudad</th>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (supplier of suppliers(); track supplier.id) {
+            <tr>
+              <td><span class="supplier-list__name">{{ supplier.nombre }}</span></td>
+              <td>{{ supplier.ruc ?? '-' }}</td>
+              <td>{{ supplier.telefono ?? '-' }}</td>
+              <td>{{ supplier.ciudad ?? '-' }}</td>
+              <td>{{ supplier.correo ?? '-' }}</td>
+              <td>
+                <span class="supplier-list__status"
+                  [class.supplier-list__status--active]="supplier.isActive"
+                  [class.supplier-list__status--inactive]="!supplier.isActive">
+                  {{ supplier.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td><span class="supplier-list__date">{{ supplier.createdAt | date:'dd/MM/yyyy' }}</span></td>
+              <td class="supplier-list__actions">
+                @if (canUpdate) {
+                  <a [routerLink]="[supplier.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar proveedor">
+                    Editar
+                  </a>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">
+                <div class="supplier-list__empty">No hay proveedores registrados.</div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (totalPages() > 1) {
+        <div class="supplier-list__pagination">
+          <div class="supplier-list__page-size">
+            <label for="supplier-page-size">Mostrar</label>
+            <select id="supplier-page-size" (change)="onPageSizeChange(+$any($event.target).value)">
+              @for (size of pageSizeOptions; track size) {
+                <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+              }
+            </select>
+            <span>por página</span>
+          </div>
+          <div class="supplier-list__page-controls">
+            <button
+              class="btn btn--sm btn--outline"
+              [disabled]="currentPage() <= 1"
+              (click)="goToPage(currentPage() - 1)"
+            >
+              Anterior
+            </button>
+            <span class="supplier-list__page-info">
+              Página {{ currentPage() }} de {{ totalPages() }} ({{ totalCount() }} proveedores)
+            </span>
+            <button
+              class="btn btn--sm btn--outline"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="goToPage(currentPage() + 1)"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      } @else if (totalCount() > 0) {
+        <div class="supplier-list__pagination">
+          <div class="supplier-list__page-size">
+            <label for="supplier-page-size-single">Mostrar</label>
+            <select id="supplier-page-size-single" (change)="onPageSizeChange(+$any($event.target).value)">
+              @for (size of pageSizeOptions; track size) {
+                <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+              }
+            </select>
+            <span>por página</span>
+          </div>
+          <span class="supplier-list__page-info">{{ totalCount() }} proveedores</span>
+        </div>
+      }
+    </div>
+  }
+</div>

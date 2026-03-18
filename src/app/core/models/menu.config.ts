@@ -18,6 +18,7 @@ export const MENU_CONFIG: MenuItem[] = [
     route: '/directory',
     children: [
       { label: 'Clientes', icon: '🏢', route: '/directory/clients', permissions: ['clients.read'] },
+      { label: 'Proveedores', icon: '🚚', route: '/directory/suppliers', permissions: ['suppliers.read'] },
     ]
   },
   {

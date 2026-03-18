@@ -2,7 +2,7 @@
 @use '../../../../../styles/variables' as *;
 @use '../../../../../styles/mixins' as *;
 
-.client-list {
+.supplier-list {
   &__header {
     @include flex-between;
     margin-bottom: $spacing-xl;
@@ -147,47 +147,6 @@
     font-size: $font-size-sm;
     color: $gray-600;
   }
-
-  &__overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  &__modal {
-    background-color: $white;
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-lg;
-    padding: $spacing-xl;
-    max-width: 420px;
-    width: 90%;
-  }
-
-  &__modal-title {
-    font-size: $font-size-lg;
-    font-weight: 700;
-    color: $gray-900;
-    margin-bottom: $spacing-sm;
-  }
-
-  &__modal-text {
-    font-size: $font-size-sm;
-    color: $gray-600;
-    margin-bottom: $spacing-lg;
-  }
-
-  &__modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: $spacing-sm;
-  }
 }
 
 .btn {
@@ -209,16 +168,6 @@
 
     &:hover:not(:disabled) {
       background-color: $gray-50;
-    }
-  }
-
-  &--danger {
-    color: $white;
-    background-color: $danger;
-    border: 1px solid $danger;
-
-    &:hover:not(:disabled) {
-      background-color: color.adjust($danger, $lightness: -8%);
     }
   }
 }

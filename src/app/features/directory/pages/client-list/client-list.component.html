@@ -4,9 +4,11 @@
       <h2 class="client-list__title">Clientes</h2>
       <p class="client-list__subtitle">Gestiona los clientes del directorio</p>
     </div>
-    <a routerLink="new" class="btn btn--primary">
-      + Nuevo cliente
-    </a>
+    @if (canCreate) {
+      <a routerLink="new" class="btn btn--primary">
+        + Nuevo cliente
+      </a>
+    }
   </div>
 
   @if (errorMessage()) {
@@ -47,9 +49,23 @@
               </td>
               <td class="client-list__date">{{ client.createdAt | date:'dd/MM/yyyy' }}</td>
               <td class="client-list__actions">
-                <a [routerLink]="[client.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar cliente">
-                  Editar
+                <a [routerLink]="[client.id]" class="btn btn--sm btn--outline" aria-label="Ver cliente">
+                  Ver
                 </a>
+                @if (canUpdate) {
+                  <a [routerLink]="[client.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar cliente">
+                    Editar
+                  </a>
+                }
+                @if (canDelete) {
+                  <button
+                    type="button"
+                    class="btn btn--sm btn--danger"
+                    aria-label="Eliminar cliente"
+                    (click)="confirmDelete(client.id)">
+                    Eliminar
+                  </button>
+                }
               </td>
             </tr>
           } @empty {
@@ -108,3 +124,17 @@
     }
   }
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+@if (confirmDeleteId()) {
+  <div class="client-list__overlay" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
+    <div class="client-list__modal" (click)="$event.stopPropagation()" (keydown.escape)="cancelDelete()">
+      <h3 class="client-list__modal-title">Confirmar eliminación</h3>
+      <p class="client-list__modal-text">¿Está seguro de que desea eliminar este cliente? Esta acción no se puede deshacer.</p>
+      <div class="client-list__modal-actions">
+        <button type="button" class="btn btn--sm btn--outline" (click)="cancelDelete()">Cancelar</button>
+        <button type="button" class="btn btn--sm btn--danger" (click)="deleteClient(confirmDeleteId()!)">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

@@ -7,6 +7,8 @@ import {
   ClientDetail,
   CreateClientRequest,
   UpdateClientRequest,
+  UpdateClientContactsRequest,
+  UpdateClientCommercialInfoRequest,
   ClientSearch,
   PagedResult
 } from '../models/client.model';
@@ -44,12 +46,30 @@ export class ClientService {
     );
   }
 
+  updateClientContacts(id: string, request: UpdateClientContactsRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/clients/${id}/contacts`, request).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  updateClientCommercialInfo(id: string, request: UpdateClientCommercialInfoRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/clients/${id}/commercial-info`, request).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
   searchClients(query: string, maxResults: number = 10): Observable<ClientSearch[]> {
     const params = new HttpParams()
       .set('q', query)
       .set('maxResults', maxResults);
 
     return this.http.get<ClientSearch[]>(`${this.apiUrl}/clients/search`, { params }).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
+  deleteClient(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/clients/${id}`).pipe(
       catchError(error => throwError(() => error))
     );
   }

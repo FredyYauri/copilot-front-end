@@ -4,33 +4,31 @@ import { Location } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators, NonNullableFormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
-import { ClientService } from '../../services/client.service';
+import { SupplierService } from '../../services/supplier.service';
 
-interface ClientGeneralForm {
+interface SupplierGeneralForm {
   nombre: FormControl<string>;
   ruc: FormControl<string>;
-  dni: FormControl<string>;
+  telefono: FormControl<string>;
   direccion: FormControl<string>;
   distrito: FormControl<string>;
-  referencia: FormControl<string>;
-  telefono: FormControl<string>;
+  ciudad: FormControl<string>;
+  correo: FormControl<string>;
+  paginaWeb: FormControl<string>;
 }
 
-interface ClientContactForm {
+interface SupplierCommercialForm {
+  numeroCuenta: FormControl<string>;
+  banco: FormControl<string>;
+  productos: FormControl<string>;
+  observaciones: FormControl<string>;
+}
+
+interface SupplierContactForm {
   nombre: FormControl<string>;
   cargo: FormControl<string>;
   telefono: FormControl<string>;
   correo: FormControl<string>;
-  comentarios: FormControl<string>;
-}
-
-interface ClientCommercialForm {
-  asesorComercial: FormControl<string>;
-  codigoAsesor: FormControl<string>;
-  medioCaptacion: FormControl<string>;
-  centralRiesgo: FormControl<string>;
-  lineaCredito: FormControl<string>;
-  comentarios: FormControl<string>;
 }
 
 interface StepConfig {
@@ -40,24 +38,24 @@ interface StepConfig {
 }
 
 @Component({
-  selector: 'app-client-form',
+  selector: 'app-supplier-form',
   standalone: true,
   imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './client-form.component.html',
-  styleUrl: './client-form.component.scss'
+  templateUrl: './supplier-form.component.html',
+  styleUrl: './supplier-form.component.scss'
 })
-export class ClientFormComponent implements OnInit {
+export class SupplierFormComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
-  private readonly clientService = inject(ClientService);
+  private readonly supplierService = inject(SupplierService);
 
   readonly isEditMode = signal(false);
   readonly loading = signal(false);
   readonly errorMessage = signal('');
-  readonly clientId = signal('');
+  readonly supplierId = signal('');
   readonly currentStep = signal(0);
 
   // Per-section state for edit mode
@@ -73,19 +71,20 @@ export class ClientFormComponent implements OnInit {
   );
 
   readonly steps: StepConfig[] = [
-    { id: 'general', label: 'Cliente', number: 1 },
+    { id: 'general', label: 'Proveedor', number: 1 },
     { id: 'contacts', label: 'Contactos', number: 2 },
     { id: 'commercial', label: 'Info Comercial', number: 3 }
   ];
 
-  generalForm = this.fb.group<ClientGeneralForm>({
+  generalForm = this.fb.group<SupplierGeneralForm>({
     nombre: this.fb.control('', [Validators.required, Validators.maxLength(200)]),
-    ruc: this.fb.control('', [Validators.pattern(/^\d{11}$/)]),
-    dni: this.fb.control('', [Validators.pattern(/^\d{8}$/)]),
-    direccion: this.fb.control('', [Validators.required, Validators.maxLength(500)]),
-    distrito: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
-    referencia: this.fb.control('', [Validators.maxLength(500)]),
-    telefono: this.fb.control('', [Validators.required, Validators.maxLength(19)])
+    ruc: this.fb.control('', [Validators.pattern(/^(\d{11}|999)$/)]),
+    telefono: this.fb.control('', [Validators.maxLength(19)]),
+    direccion: this.fb.control('', [Validators.maxLength(500)]),
+    distrito: this.fb.control('', [Validators.maxLength(100)]),
+    ciudad: this.fb.control('', [Validators.maxLength(100)]),
+    correo: this.fb.control('', [Validators.email]),
+    paginaWeb: this.fb.control('', [Validators.maxLength(300)])
   });
 
   private readonly generalFormValid = toSignal(
@@ -102,23 +101,21 @@ export class ClientFormComponent implements OnInit {
     return true;
   });
 
-  contactsForm = this.fb.array<FormGroup<ClientContactForm>>([]);
+  contactsForm = this.fb.array<FormGroup<SupplierContactForm>>([]);
 
-  commercialForm = this.fb.group<ClientCommercialForm>({
-    asesorComercial: this.fb.control('', [Validators.maxLength(200)]),
-    codigoAsesor: this.fb.control('', [Validators.maxLength(50)]),
-    medioCaptacion: this.fb.control('', [Validators.maxLength(100)]),
-    centralRiesgo: this.fb.control('', [Validators.maxLength(100)]),
-    lineaCredito: this.fb.control(''),
-    comentarios: this.fb.control('', [Validators.maxLength(500)])
+  commercialForm = this.fb.group<SupplierCommercialForm>({
+    numeroCuenta: this.fb.control('', [Validators.maxLength(50)]),
+    banco: this.fb.control('', [Validators.maxLength(100)]),
+    productos: this.fb.control('', [Validators.maxLength(1000)]),
+    observaciones: this.fb.control('', [Validators.maxLength(1000)])
   });
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
     if (id) {
       this.isEditMode.set(true);
-      this.clientId.set(id);
-      this.loadClient(id);
+      this.supplierId.set(id);
+      this.loadSupplier(id);
     }
   }
 
@@ -180,7 +177,7 @@ export class ClientFormComponent implements OnInit {
       this.generalForm.markAllAsTouched();
       return;
     }
-    this.persistClient();
+    this.persistSupplier();
   }
 
   /** Save only the current section in edit mode */
@@ -220,27 +217,32 @@ export class ClientFormComponent implements OnInit {
 
     this.setSectionSaving('general', true);
     const general = this.generalForm.getRawValue();
+    const commercial = this.commercialForm.getRawValue();
 
-    this.clientService.updateClient(this.clientId(), {
+    this.supplierService.updateSupplier(this.supplierId(), {
       nombre: general.nombre,
       ruc: general.ruc || null,
-      dni: general.dni || null,
-      direccion: general.direccion,
-      distrito: general.distrito,
-      referencia: general.referencia || null,
-      telefono: general.telefono,
+      telefono: general.telefono || null,
+      direccion: general.direccion || null,
+      distrito: general.distrito || null,
+      ciudad: general.ciudad || null,
+      correo: general.correo || null,
+      paginaWeb: general.paginaWeb || null,
+      numeroCuenta: commercial.numeroCuenta || null,
+      banco: commercial.banco || null,
+      productos: commercial.productos || null,
+      observaciones: commercial.observaciones || null,
       isActive: true,
-      contacts: null,
-      commercialInfo: null
+      contacts: null
     }).subscribe({
       next: () => {
         this.setSectionSaving('general', false);
         this.generalDirty.set(false);
-        this.setSectionSuccess('general', 'Datos del cliente guardados exitosamente.');
+        this.setSectionSuccess('general', 'Datos del proveedor guardados exitosamente.');
       },
       error: (err) => {
         this.setSectionSaving('general', false);
-        this.setSectionError('general', err?.error?.detail ?? 'Error al guardar los datos del cliente.');
+        this.setSectionError('general', err?.error?.detail ?? 'Error al guardar los datos del proveedor.');
       }
     });
   }
@@ -255,13 +257,12 @@ export class ClientFormComponent implements OnInit {
     this.setSectionSaving('contacts', true);
     const contacts = this.contactsForm.getRawValue();
 
-    this.clientService.updateClientContacts(this.clientId(), {
+    this.supplierService.updateSupplierContacts(this.supplierId(), {
       contacts: contacts.map(c => ({
         nombre: c.nombre,
         cargo: c.cargo || null,
         telefono: c.telefono || null,
-        correo: c.correo || null,
-        comentarios: c.comentarios || null
+        correo: c.correo || null
       }))
     }).subscribe({
       next: () => {
@@ -278,15 +279,24 @@ export class ClientFormComponent implements OnInit {
 
   private saveCommercialSection(): void {
     this.setSectionSaving('commercial', true);
+    const general = this.generalForm.getRawValue();
     const commercial = this.commercialForm.getRawValue();
 
-    this.clientService.updateClientCommercialInfo(this.clientId(), {
-      asesorComercial: commercial.asesorComercial || null,
-      codigoAsesor: commercial.codigoAsesor || null,
-      medioCaptacion: commercial.medioCaptacion || null,
-      centralRiesgo: commercial.centralRiesgo || null,
-      lineaCredito: commercial.lineaCredito ? Number.parseFloat(commercial.lineaCredito) : null,
-      comentarios: commercial.comentarios || null
+    this.supplierService.updateSupplier(this.supplierId(), {
+      nombre: general.nombre,
+      ruc: general.ruc || null,
+      telefono: general.telefono || null,
+      direccion: general.direccion || null,
+      distrito: general.distrito || null,
+      ciudad: general.ciudad || null,
+      correo: general.correo || null,
+      paginaWeb: general.paginaWeb || null,
+      numeroCuenta: commercial.numeroCuenta || null,
+      banco: commercial.banco || null,
+      productos: commercial.productos || null,
+      observaciones: commercial.observaciones || null,
+      isActive: true,
+      contacts: null
     }).subscribe({
       next: () => {
         this.setSectionSaving('commercial', false);
@@ -300,48 +310,42 @@ export class ClientFormComponent implements OnInit {
     });
   }
 
-  private persistClient(): void {
+  private persistSupplier(): void {
     this.loading.set(true);
     this.errorMessage.set('');
 
     if (this.isEditMode()) {
-      this.updateClient();
+      this.updateSupplier();
     } else {
-      this.createClient();
+      this.createSupplier();
     }
   }
 
-  private createClient(): void {
+  private createSupplier(): void {
     const general = this.generalForm.getRawValue();
     const contacts = this.contactsForm.getRawValue();
     const commercial = this.commercialForm.getRawValue();
 
-    this.clientService.createClient({
+    this.supplierService.createSupplier({
       nombre: general.nombre,
       ruc: general.ruc || null,
-      dni: general.dni || null,
-      direccion: general.direccion,
-      distrito: general.distrito,
-      referencia: general.referencia || null,
-      telefono: general.telefono,
+      telefono: general.telefono || null,
+      direccion: general.direccion || null,
+      distrito: general.distrito || null,
+      ciudad: general.ciudad || null,
+      correo: general.correo || null,
+      paginaWeb: general.paginaWeb || null,
+      numeroCuenta: commercial.numeroCuenta || null,
+      banco: commercial.banco || null,
+      productos: commercial.productos || null,
+      observaciones: commercial.observaciones || null,
       contacts: contacts.length > 0
         ? contacts.map(c => ({
             nombre: c.nombre,
             cargo: c.cargo || null,
             telefono: c.telefono || null,
-            correo: c.correo || null,
-            comentarios: c.comentarios || null
+            correo: c.correo || null
           }))
-        : null,
-      commercialInfo: this.hasCommercialInfo(commercial)
-        ? {
-            asesorComercial: commercial.asesorComercial || null,
-            codigoAsesor: commercial.codigoAsesor || null,
-            medioCaptacion: commercial.medioCaptacion || null,
-            centralRiesgo: commercial.centralRiesgo || null,
-            lineaCredito: commercial.lineaCredito ? Number.parseFloat(commercial.lineaCredito) : null,
-            comentarios: commercial.comentarios || null
-          }
         : null
     }).subscribe({
       next: () => {
@@ -350,40 +354,36 @@ export class ClientFormComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err?.error?.detail ?? 'Error al crear el cliente.');
+        this.errorMessage.set(err?.error?.detail ?? 'Error al crear el proveedor.');
       }
     });
   }
 
-  private updateClient(): void {
+  private updateSupplier(): void {
     const general = this.generalForm.getRawValue();
     const contacts = this.contactsForm.getRawValue();
     const commercial = this.commercialForm.getRawValue();
 
-    this.clientService.updateClient(this.clientId(), {
+    this.supplierService.updateSupplier(this.supplierId(), {
       nombre: general.nombre,
       ruc: general.ruc || null,
-      dni: general.dni || null,
-      direccion: general.direccion,
-      distrito: general.distrito,
-      referencia: general.referencia || null,
-      telefono: general.telefono,
+      telefono: general.telefono || null,
+      direccion: general.direccion || null,
+      distrito: general.distrito || null,
+      ciudad: general.ciudad || null,
+      correo: general.correo || null,
+      paginaWeb: general.paginaWeb || null,
+      numeroCuenta: commercial.numeroCuenta || null,
+      banco: commercial.banco || null,
+      productos: commercial.productos || null,
+      observaciones: commercial.observaciones || null,
       isActive: true,
       contacts: contacts.map(c => ({
         nombre: c.nombre,
         cargo: c.cargo || null,
         telefono: c.telefono || null,
-        correo: c.correo || null,
-        comentarios: c.comentarios || null
-      })),
-      commercialInfo: {
-        asesorComercial: commercial.asesorComercial || null,
-        codigoAsesor: commercial.codigoAsesor || null,
-        medioCaptacion: commercial.medioCaptacion || null,
-        centralRiesgo: commercial.centralRiesgo || null,
-        lineaCredito: commercial.lineaCredito ? Number.parseFloat(commercial.lineaCredito) : null,
-        comentarios: commercial.comentarios || null
-      }
+        correo: c.correo || null
+      }))
     }).subscribe({
       next: () => {
         this.loading.set(false);
@@ -394,47 +394,43 @@ export class ClientFormComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.errorMessage.set(err?.error?.detail ?? 'Error al actualizar el cliente.');
+        this.errorMessage.set(err?.error?.detail ?? 'Error al actualizar el proveedor.');
       }
     });
   }
 
-  private loadClient(id: string): void {
+  private loadSupplier(id: string): void {
     this.loading.set(true);
-    this.clientService.getClientById(id).subscribe({
-      next: (client) => {
+    this.supplierService.getSupplierById(id).subscribe({
+      next: (supplier) => {
         this.generalForm.patchValue({
-          nombre: client.nombre,
-          ruc: client.ruc ?? '',
-          dni: client.dni ?? '',
-          direccion: client.direccion,
-          distrito: client.distrito,
-          referencia: client.referencia ?? '',
-          telefono: client.telefono
+          nombre: supplier.nombre,
+          ruc: supplier.ruc ?? '',
+          telefono: supplier.telefono ?? '',
+          direccion: supplier.direccion ?? '',
+          distrito: supplier.distrito ?? '',
+          ciudad: supplier.ciudad ?? '',
+          correo: supplier.correo ?? '',
+          paginaWeb: supplier.paginaWeb ?? ''
+        });
+
+        this.commercialForm.patchValue({
+          numeroCuenta: supplier.numeroCuenta ?? '',
+          banco: supplier.banco ?? '',
+          productos: supplier.productos ?? '',
+          observaciones: supplier.observaciones ?? ''
         });
 
         this.contactsForm.clear();
-        for (const contact of client.contacts) {
+        for (const contact of supplier.contacts) {
           const group = this.createContactGroup();
           group.patchValue({
             nombre: contact.nombre,
             cargo: contact.cargo ?? '',
             telefono: contact.telefono ?? '',
-            correo: contact.correo ?? '',
-            comentarios: contact.comentarios ?? ''
+            correo: contact.correo ?? ''
           });
           this.contactsForm.push(group);
-        }
-
-        if (client.commercialInfo) {
-          this.commercialForm.patchValue({
-            asesorComercial: client.commercialInfo.asesorComercial ?? '',
-            codigoAsesor: client.commercialInfo.codigoAsesor ?? '',
-            medioCaptacion: client.commercialInfo.medioCaptacion ?? '',
-            centralRiesgo: client.commercialInfo.centralRiesgo ?? '',
-            lineaCredito: client.commercialInfo.lineaCredito?.toString() ?? '',
-            comentarios: client.commercialInfo.comentarios ?? ''
-          });
         }
 
         // Reset dirty state after loading
@@ -444,24 +440,19 @@ export class ClientFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.errorMessage.set('Error al cargar el cliente.');
+        this.errorMessage.set('Error al cargar el proveedor.');
         this.loading.set(false);
       }
     });
   }
 
-  private createContactGroup(): FormGroup<ClientContactForm> {
-    return this.fb.group<ClientContactForm>({
+  private createContactGroup(): FormGroup<SupplierContactForm> {
+    return this.fb.group<SupplierContactForm>({
       nombre: this.fb.control('', [Validators.required, Validators.maxLength(200)]),
       cargo: this.fb.control('', [Validators.maxLength(100)]),
       telefono: this.fb.control('', [Validators.maxLength(19)]),
-      correo: this.fb.control('', [Validators.email]),
-      comentarios: this.fb.control('', [Validators.maxLength(500)])
+      correo: this.fb.control('', [Validators.email])
     });
-  }
-
-  private hasCommercialInfo(info: Record<string, string>): boolean {
-    return Object.values(info).some(v => v !== '');
   }
 
   private setSectionSaving(section: string, value: boolean): void {

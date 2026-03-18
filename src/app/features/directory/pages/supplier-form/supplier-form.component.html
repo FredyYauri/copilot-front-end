@@ -1,0 +1,462 @@
+<div class="supplier-form">
+  <div class="supplier-form__header">
+    <h1 class="supplier-form__title">
+      @if (isEditMode()) {
+        Editar Proveedor
+      } @else {
+        Nuevo Proveedor
+      }
+    </h1>
+    @if (isEditMode() && hasUnsavedChanges()) {
+      <span class="supplier-form__unsaved-badge">Cambios sin guardar</span>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="supplier-form__error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading() && isEditMode()) {
+    <div class="supplier-form__loading">Cargando...</div>
+  } @else {
+    <!-- Edit mode: Tab navigation -->
+    @if (isEditMode()) {
+      <div class="supplier-form__tabs">
+        @for (step of steps; track step.id; let i = $index) {
+          <button
+            type="button"
+            class="supplier-form__tab"
+            [class.supplier-form__tab--active]="currentStep() === i"
+            [attr.aria-selected]="currentStep() === i"
+            [attr.aria-controls]="'panel-' + step.id"
+            (click)="goToStep(i)">
+            {{ step.label }}
+            @if ((i === 0 && generalDirty()) || (i === 1 && contactsDirty()) || (i === 2 && commercialDirty())) {
+              <span class="supplier-form__tab-dirty" title="Cambios sin guardar">●</span>
+            }
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Create mode: Stepper Indicator -->
+      <div class="supplier-form__stepper">
+        @for (step of steps; track step.id; let i = $index) {
+          <div
+            class="supplier-form__step"
+            [class.supplier-form__step--active]="currentStep() === i"
+            [class.supplier-form__step--completed]="currentStep() > i">
+            <div class="supplier-form__step-circle">
+              @if (currentStep() > i) {
+                ✓
+              } @else {
+                {{ step.number }}
+              }
+            </div>
+            <span class="supplier-form__step-label">{{ step.label }}</span>
+          </div>
+          @if (i < steps.length - 1) {
+            <div
+              class="supplier-form__step-line"
+              [class.supplier-form__step-line--completed]="currentStep() > i">
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Step 1: Proveedor -->
+      @if (currentStep() === 0) {
+        <!-- Section messages (edit mode) -->
+        @if (isEditMode() && sectionSuccess()['general']) {
+          <output class="supplier-form__success">{{ sectionSuccess()['general'] }}</output>
+        }
+        @if (isEditMode() && sectionError()['general']) {
+          <output class="supplier-form__error">{{ sectionError()['general'] }}</output>
+        }
+
+        <div class="supplier-form__panel" id="panel-general" role="tabpanel">
+          <div class="supplier-form__grid">
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="nombre">Nombre *</label>
+              <input
+                id="nombre"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.nombre"
+                (input)="markGeneralDirty()"
+                [class.supplier-form__input--error]="generalForm.controls.nombre.touched && generalForm.controls.nombre.invalid" />
+              @if (generalForm.controls.nombre.touched && generalForm.controls.nombre.hasError('required')) {
+                <span class="supplier-form__error-text">El nombre es requerido.</span>
+              }
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="ruc">RUC</label>
+              <input
+                id="ruc"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.ruc"
+                (input)="markGeneralDirty()"
+                maxlength="11"
+                [class.supplier-form__input--error]="generalForm.controls.ruc.touched && generalForm.controls.ruc.invalid" />
+              @if (generalForm.controls.ruc.touched && generalForm.controls.ruc.hasError('pattern')) {
+                <span class="supplier-form__error-text">El RUC debe tener 11 dígitos o "999" para informales.</span>
+              }
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="telefono">Teléfono</label>
+              <input
+                id="telefono"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.telefono"
+                (input)="markGeneralDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="correo">Correo</label>
+              <input
+                id="correo"
+                type="email"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.correo"
+                (input)="markGeneralDirty()"
+                [class.supplier-form__input--error]="generalForm.controls.correo.touched && generalForm.controls.correo.invalid" />
+              @if (generalForm.controls.correo.touched && generalForm.controls.correo.hasError('email')) {
+                <span class="supplier-form__error-text">Correo inválido.</span>
+              }
+            </div>
+
+            <div class="supplier-form__field supplier-form__field--full">
+              <label class="supplier-form__label" for="direccion">Dirección</label>
+              <input
+                id="direccion"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.direccion"
+                (input)="markGeneralDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="distrito">Distrito</label>
+              <input
+                id="distrito"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.distrito"
+                (input)="markGeneralDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="ciudad">Ciudad</label>
+              <input
+                id="ciudad"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.ciudad"
+                (input)="markGeneralDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="paginaWeb">Página Web</label>
+              <input
+                id="paginaWeb"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="generalForm.controls.paginaWeb"
+                (input)="markGeneralDirty()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit mode: per-section save -->
+        @if (isEditMode()) {
+          <div class="supplier-form__actions">
+            <div class="supplier-form__actions-left">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--secondary"
+                (click)="goBack()">
+                Volver
+              </button>
+            </div>
+            <div class="supplier-form__actions-right">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--primary"
+                [disabled]="isSectionSaving('general') || !generalDirty()"
+                (click)="saveSection()">
+                @if (isSectionSaving('general')) {
+                  Guardando...
+                } @else {
+                  Guardar Proveedor
+                }
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Step 2: Contactos -->
+      @if (currentStep() === 1) {
+        <!-- Section messages (edit mode) -->
+        @if (isEditMode() && sectionSuccess()['contacts']) {
+          <output class="supplier-form__success">{{ sectionSuccess()['contacts'] }}</output>
+        }
+        @if (isEditMode() && sectionError()['contacts']) {
+          <output class="supplier-form__error">{{ sectionError()['contacts'] }}</output>
+        }
+
+        <div class="supplier-form__panel" id="panel-contacts" role="tabpanel">
+          <div class="supplier-form__panel-header">
+            <h3 class="supplier-form__panel-title">Contactos</h3>
+            <button type="button" class="supplier-form__btn-add" (click)="addContact()">
+              + Agregar Contacto
+            </button>
+          </div>
+
+          @if (contactsForm.length === 0) {
+            <p class="supplier-form__empty">No hay contactos agregados. Este paso es opcional.</p>
+          }
+
+          @for (contact of contactsForm.controls; track $index; let i = $index) {
+            <div class="supplier-form__contact-card">
+              <div class="supplier-form__contact-header">
+                <span class="supplier-form__contact-number">Contacto {{ i + 1 }}</span>
+                <button type="button" class="supplier-form__btn-remove" (click)="removeContact(i)">
+                  Eliminar
+                </button>
+              </div>
+              <div class="supplier-form__grid">
+                <div class="supplier-form__field">
+                  <label class="supplier-form__label" [attr.for]="'contactNombre_' + i">Nombre *</label>
+                  <input
+                    [id]="'contactNombre_' + i"
+                    type="text"
+                    class="supplier-form__input"
+                    [formControl]="contact.controls.nombre"
+                    (input)="markContactsDirty()"
+                    [class.supplier-form__input--error]="contact.controls.nombre.touched && contact.controls.nombre.invalid" />
+                  @if (contact.controls.nombre.touched && contact.controls.nombre.hasError('required')) {
+                    <span class="supplier-form__error-text">El nombre es requerido.</span>
+                  }
+                </div>
+
+                <div class="supplier-form__field">
+                  <label class="supplier-form__label" [attr.for]="'contactCargo_' + i">Cargo</label>
+                  <input
+                    [id]="'contactCargo_' + i"
+                    type="text"
+                    class="supplier-form__input"
+                    [formControl]="contact.controls.cargo"
+                    (input)="markContactsDirty()" />
+                </div>
+
+                <div class="supplier-form__field">
+                  <label class="supplier-form__label" [attr.for]="'contactTelefono_' + i">Teléfono</label>
+                  <input
+                    [id]="'contactTelefono_' + i"
+                    type="text"
+                    class="supplier-form__input"
+                    [formControl]="contact.controls.telefono"
+                    (input)="markContactsDirty()" />
+                </div>
+
+                <div class="supplier-form__field">
+                  <label class="supplier-form__label" [attr.for]="'contactCorreo_' + i">Correo</label>
+                  <input
+                    [id]="'contactCorreo_' + i"
+                    type="email"
+                    class="supplier-form__input"
+                    [formControl]="contact.controls.correo"
+                    (input)="markContactsDirty()"
+                    [class.supplier-form__input--error]="contact.controls.correo.touched && contact.controls.correo.invalid" />
+                  @if (contact.controls.correo.touched && contact.controls.correo.hasError('email')) {
+                    <span class="supplier-form__error-text">Correo inválido.</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Edit mode: per-section save -->
+        @if (isEditMode()) {
+          <div class="supplier-form__actions">
+            <div class="supplier-form__actions-left">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--secondary"
+                (click)="goBack()">
+                Volver
+              </button>
+            </div>
+            <div class="supplier-form__actions-right">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--primary"
+                [disabled]="isSectionSaving('contacts') || !contactsDirty()"
+                (click)="saveSection()">
+                @if (isSectionSaving('contacts')) {
+                  Guardando...
+                } @else {
+                  Guardar Contactos
+                }
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Step 3: Info Comercial -->
+      @if (currentStep() === 2) {
+        <!-- Section messages (edit mode) -->
+        @if (isEditMode() && sectionSuccess()['commercial']) {
+          <output class="supplier-form__success">{{ sectionSuccess()['commercial'] }}</output>
+        }
+        @if (isEditMode() && sectionError()['commercial']) {
+          <output class="supplier-form__error">{{ sectionError()['commercial'] }}</output>
+        }
+
+        <div class="supplier-form__panel" id="panel-commercial" role="tabpanel">
+          <div class="supplier-form__grid">
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="banco">Banco</label>
+              <input
+                id="banco"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="commercialForm.controls.banco"
+                (input)="markCommercialDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="numeroCuenta">Número de Cuenta</label>
+              <input
+                id="numeroCuenta"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="commercialForm.controls.numeroCuenta"
+                (input)="markCommercialDirty()" />
+            </div>
+
+            <div class="supplier-form__field">
+              <label class="supplier-form__label" for="productos">Productos</label>
+              <input
+                id="productos"
+                type="text"
+                class="supplier-form__input"
+                [formControl]="commercialForm.controls.productos"
+                (input)="markCommercialDirty()" />
+            </div>
+
+            <div class="supplier-form__field supplier-form__field--full">
+              <label class="supplier-form__label" for="observaciones">Observaciones</label>
+              <textarea
+                id="observaciones"
+                class="supplier-form__textarea"
+                [formControl]="commercialForm.controls.observaciones"
+                (input)="markCommercialDirty()"
+                rows="3">
+              </textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit mode: per-section save -->
+        @if (isEditMode()) {
+          <div class="supplier-form__actions">
+            <div class="supplier-form__actions-left">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--secondary"
+                (click)="goBack()">
+                Volver
+              </button>
+            </div>
+            <div class="supplier-form__actions-right">
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--primary"
+                [disabled]="isSectionSaving('commercial') || !commercialDirty()"
+                (click)="saveSection()">
+                @if (isSectionSaving('commercial')) {
+                  Guardando...
+                } @else {
+                  Guardar Info Comercial
+                }
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Create mode: Navigation Actions -->
+      @if (!isEditMode()) {
+        <div class="supplier-form__actions">
+          <div class="supplier-form__actions-left">
+            @if (!isFirstStep()) {
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--secondary"
+                (click)="prevStep()">
+                Anterior
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--secondary"
+                (click)="goBack()">
+                Cancelar
+              </button>
+            }
+          </div>
+          <div class="supplier-form__actions-right">
+            @if (!isLastStep()) {
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--outline"
+                [disabled]="loading() || !canAdvance()"
+                (click)="saveAndFinish()">
+                @if (loading()) {
+                  Guardando...
+                } @else {
+                  Guardar y terminar
+                }
+              </button>
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--primary"
+                [disabled]="!canAdvance()"
+                (click)="nextStep()">
+                Siguiente
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="supplier-form__btn supplier-form__btn--outline"
+                (click)="prevStep()">
+                Anterior
+              </button>
+              <button
+                type="submit"
+                class="supplier-form__btn supplier-form__btn--primary"
+                [disabled]="loading()">
+                @if (loading()) {
+                  Guardando...
+                } @else {
+                  Finalizar
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </form>
+  }
+</div>

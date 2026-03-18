@@ -25,7 +25,7 @@ export const routes: Routes = [
         loadChildren: () => import('./features/directory/directory.routes')
           .then(m => m.DIRECTORY_ROUTES),
         canActivate: [permissionGuard],
-        data: { permissions: ['clients.read'] }
+        data: { permissions: ['clients.read', 'suppliers.read'] }
       },
       {
         path: 'settings',

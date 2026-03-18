@@ -1,0 +1,134 @@
+<div class="client-detail">
+  <div class="client-detail__header">
+    <h1 class="client-detail__title">Detalle del Cliente</h1>
+    <div class="client-detail__header-actions">
+      @if (client(); as c) {
+        <a [routerLink]="['../', c.id, 'edit']" class="btn btn--primary">Editar</a>
+      }
+      <button type="button" class="btn btn--secondary" (click)="goBack()">Volver</button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="client-detail__error" role="alert">{{ errorMessage() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="client-detail__loading">Cargando...</div>
+  } @else {
+    @if (client(); as c) {
+    <!-- Datos Generales -->
+    <section class="client-detail__section">
+      <h2 class="client-detail__section-title">Datos Generales</h2>
+      <div class="client-detail__grid">
+        <div class="client-detail__field">
+          <span class="client-detail__label">Nombre</span>
+          <span class="client-detail__value">{{ c.nombre }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">RUC</span>
+          <span class="client-detail__value">{{ c.ruc ?? '—' }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">DNI</span>
+          <span class="client-detail__value">{{ c.dni ?? '—' }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">Teléfono</span>
+          <span class="client-detail__value">{{ c.telefono }}</span>
+        </div>
+        <div class="client-detail__field client-detail__field--full">
+          <span class="client-detail__label">Dirección</span>
+          <span class="client-detail__value">{{ c.direccion }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">Distrito</span>
+          <span class="client-detail__value">{{ c.distrito }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">Referencia</span>
+          <span class="client-detail__value">{{ c.referencia ?? '—' }}</span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">Estado</span>
+          <span class="client-detail__status" [class.client-detail__status--active]="c.isActive" [class.client-detail__status--inactive]="!c.isActive">
+            {{ c.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+        <div class="client-detail__field">
+          <span class="client-detail__label">Fecha de creación</span>
+          <span class="client-detail__value">{{ c.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contactos -->
+    <section class="client-detail__section">
+      <h2 class="client-detail__section-title">Contactos</h2>
+      @if (c.contacts.length === 0) {
+        <p class="client-detail__empty">No hay contactos registrados.</p>
+      } @else {
+        <div class="client-detail__table-wrapper">
+          <table class="client-detail__table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Comentarios</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (contact of c.contacts; track contact.id) {
+                <tr>
+                  <td>{{ contact.nombre }}</td>
+                  <td>{{ contact.cargo ?? '—' }}</td>
+                  <td>{{ contact.telefono ?? '—' }}</td>
+                  <td>{{ contact.correo ?? '—' }}</td>
+                  <td>{{ contact.comentarios ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <!-- Información Comercial -->
+    <section class="client-detail__section">
+      <h2 class="client-detail__section-title">Información Comercial</h2>
+      @if (!c.commercialInfo) {
+        <p class="client-detail__empty">No hay información comercial registrada.</p>
+      } @else {
+        <div class="client-detail__grid">
+          <div class="client-detail__field">
+            <span class="client-detail__label">Asesor Comercial</span>
+            <span class="client-detail__value">{{ c.commercialInfo.asesorComercial ?? '—' }}</span>
+          </div>
+          <div class="client-detail__field">
+            <span class="client-detail__label">Código Asesor</span>
+            <span class="client-detail__value">{{ c.commercialInfo.codigoAsesor ?? '—' }}</span>
+          </div>
+          <div class="client-detail__field">
+            <span class="client-detail__label">Medio de Captación</span>
+            <span class="client-detail__value">{{ c.commercialInfo.medioCaptacion ?? '—' }}</span>
+          </div>
+          <div class="client-detail__field">
+            <span class="client-detail__label">Central de Riesgo</span>
+            <span class="client-detail__value">{{ c.commercialInfo.centralRiesgo ?? '—' }}</span>
+          </div>
+          <div class="client-detail__field">
+            <span class="client-detail__label">Línea de Crédito</span>
+            <span class="client-detail__value">{{ c.commercialInfo.lineaCredito ?? '—' }}</span>
+          </div>
+          <div class="client-detail__field client-detail__field--full">
+            <span class="client-detail__label">Comentarios</span>
+            <span class="client-detail__value">{{ c.commercialInfo.comentarios ?? '—' }}</span>
+          </div>
+        </div>
+      }
+    </section>
+    }
+  }
+</div>

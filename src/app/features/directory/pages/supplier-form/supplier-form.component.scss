@@ -1,7 +1,7 @@
 @use '../../../../../styles/variables' as *;
 @use '../../../../../styles/mixins' as *;
 
-.client-form {
+.supplier-form {
   &__header {
     @include flex-between;
     margin-bottom: $spacing-xl;
@@ -110,10 +110,6 @@
     gap: $spacing-xs;
     position: relative;
     min-width: 100px;
-
-    &--clickable {
-      cursor: pointer;
-    }
 
     &--active &-circle {
       background-color: $primary;
