@@ -1,21 +1,25 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, switchMap, of } from 'rxjs';
 import { ClientService } from '../../services/client.service';
-import { Client, PagedResult } from '../../models/client.model';
+import { Client, ClientSearch, PagedResult } from '../../models/client.model';
 import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-client-list',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './client-list.component.html',
   styleUrl: './client-list.component.scss'
 })
-export class ClientListComponent implements OnInit {
+export class ClientListComponent implements OnInit, OnDestroy {
   private readonly clientService = inject(ClientService);
   private readonly authService = inject(AuthService);
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchSubject$ = new Subject<string>();
 
   readonly clients = signal<Client[]>([]);
   readonly loading = signal(false);
@@ -26,6 +30,11 @@ export class ClientListComponent implements OnInit {
   readonly totalCount = signal(0);
   readonly errorMessage = signal('');
   readonly confirmDeleteId = signal<string | null>(null);
+
+  readonly searchTerm = signal('');
+  readonly searchResults = signal<ClientSearch[]>([]);
+  readonly isSearching = signal(false);
+  readonly searchLoading = signal(false);
 
   get canDelete(): boolean {
     return this.authService.hasPermission('clients.delete');
@@ -41,6 +50,54 @@ export class ClientListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClients();
+    this.setupSearch();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupSearch(): void {
+    this.searchSubject$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term => {
+        if (term.length < 2) {
+          this.isSearching.set(false);
+          this.searchResults.set([]);
+          this.searchLoading.set(false);
+          return of(null);
+        }
+        this.searchLoading.set(true);
+        return this.clientService.searchClients(term);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (results) => {
+        if (results) {
+          this.searchResults.set(results);
+          this.isSearching.set(true);
+        }
+        this.searchLoading.set(false);
+      },
+      error: () => {
+        this.searchLoading.set(false);
+        this.errorMessage.set('Error al buscar clientes.');
+      }
+    });
+  }
+
+  onSearchInput(term: string): void {
+    this.searchTerm.set(term);
+    this.searchSubject$.next(term);
+  }
+
+  clearSearch(): void {
+    this.searchTerm.set('');
+    this.searchResults.set([]);
+    this.isSearching.set(false);
+    this.searchLoading.set(false);
   }
 
   loadClients(): void {

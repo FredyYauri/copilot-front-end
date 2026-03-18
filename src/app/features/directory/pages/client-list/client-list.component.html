@@ -11,13 +11,80 @@
     }
   </div>
 
+  <div class="client-list__search">
+    <div class="client-list__search-input-wrapper">
+      <input
+        type="text"
+        class="client-list__search-input"
+        placeholder="Buscar por nombre, RUC o DNI..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchInput($event)"
+        aria-label="Buscar clientes"
+      />
+      @if (searchTerm()) {
+        <button
+          type="button"
+          class="client-list__search-clear"
+          (click)="clearSearch()"
+          aria-label="Limpiar búsqueda"
+        >
+          ✕
+        </button>
+      }
+    </div>
+    @if (searchLoading()) {
+      <span class="client-list__search-status">Buscando...</span>
+    }
+  </div>
+
   @if (errorMessage()) {
     <div class="client-list__error" role="alert">
       {{ errorMessage() }}
     </div>
   }
 
-  @if (loading()) {
+  @if (isSearching()) {
+    <div class="client-list__table-wrapper">
+      <table class="client-list__table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>RUC</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (result of searchResults(); track result.id) {
+            <tr>
+              <td class="client-list__name">{{ result.nombre }}</td>
+              <td>{{ result.ruc ?? '—' }}</td>
+              <td>{{ result.dni ?? '—' }}</td>
+              <td>{{ result.telefono }}</td>
+              <td class="client-list__actions">
+                <a [routerLink]="[result.id]" class="btn btn--sm btn--outline" aria-label="Ver cliente">
+                  Ver
+                </a>
+                @if (canUpdate) {
+                  <a [routerLink]="[result.id, 'edit']" class="btn btn--sm btn--outline" aria-label="Editar cliente">
+                    Editar
+                  </a>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="client-list__empty">No se encontraron clientes.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="client-list__search-info">
+        {{ searchResults().length }} resultado(s) encontrado(s)
+      </div>
+    </div>
+  } @else if (loading()) {
     <div class="client-list__loading">Cargando clientes...</div>
   } @else {
     <div class="client-list__table-wrapper">
